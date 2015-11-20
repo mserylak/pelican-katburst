@@ -1,0 +1,35 @@
+
+/**
+@anchor APIdoc
+@mainpage Introduction
+
+This document describes the Application Programming Interface (API) for Pelican.
+Included are the specifications for each class and the methods for those which
+can be refered to when writing code with Pelican.
+
+@section api_whatis What is Pelican?
+
+Pelican is an efficient, lightweight C++ library for quasi-real time data
+processing. The library provides a framework to separate the acquisition
+and processing of data, allowing the scalability and flexibility to fit a
+number of scenarios.
+
+For more verbose documentation on how to use Pelican, please refer to our
+@ref UserDoc "user guide", developer guide and web page.
+
+
+
+@defgroup c Pelican modules
+@defgroup c_plugins Instrument Plugins
+@ingroup c
+@defgroup c_modules Modules
+@ingroup c
+@defgroup c_datablobs Data Blobs
+@ingroup c
+@defgroup c_pipelines Pipelines
+@ingroup c
+@defgroup c_output Output Streamers
+@ingroup c
+
+*/
+

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pelican>
+
+<configuration version="1.0">
+
+    <server>
+
+        <chunkers>
+            <K7Chunker>
+                <connection host="127.0.0.1" port="9999"/>
+                <udpPacketsPerIteration value="128"/>
+                <data type="SpectrumDataSetStokes"/>
+            </K7Chunker>
+        </chunkers>
+
+        <buffers>
+            <SpectrumDataSetStokes>
+                <buffer maxSize="800000000" maxChunkSize="5000000"/>
+            </SpectrumDataSetStokes>
+        </buffers>
+
+    </server>
+
+</configuration>

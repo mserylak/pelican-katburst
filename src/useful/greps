@@ -1,0 +1,13 @@
+#!/bin/csh -f
+
+if ( "$1" == "-h" || "$1" == "--help" || "$1" == "" ) then
+  echo
+  echo "greps: searches pelican-lofar source code for regular expression"
+  echo
+  echo "usage:"
+  echo "  greps <regex>"
+  echo
+  exit
+endif
+
+grep -n $* `find ./src -name "*.[hH]"` `find ./src -name "*.[cC][pP][pP]"` `find ./src -name "*.[pP][yY]"` `find ./ -name "CMakeLists.txt"`

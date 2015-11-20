@@ -1,0 +1,38 @@
+#include "pelican/core/PipelineApplication.h"
+#include "pelican/core/FileDataClient.h"
+#include "SigprocPipeline.h"
+#include "SigprocAdapter.h"
+#include "SpectrumDataSet.h"
+#include "FilterBankAdapter.h"
+#include <QtCore/QCoreApplication>
+
+#include <iostream>
+
+using namespace pelican;
+using namespace ampp;
+
+int main(int argc, char* argv[])
+{
+    // Create a QCoreApplication.
+    QCoreApplication app(argc, argv);
+
+    try {
+        // Create a PipelineApplication.
+        PipelineApplication pApp(argc, argv);
+
+        // Register the pipelines that can run.
+        pApp.registerPipeline(new SigprocPipeline);
+
+        // Set the data client.
+        pApp.setDataClient("FileDataClient");
+
+        // Start the pipeline driver.
+        pApp.start();
+    }
+    // Catch any error messages from Pelican.
+    catch (const QString& error) {
+        std::cout << "Error: " << error.toStdString() << std::endl;
+    }
+
+    return 0;
+}

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pelican>
+
+<configuration version="1.0">
+
+  <pipeline>
+
+    <clients>
+      <K7DataClient>
+        <server host="127.0.0.1" port="2000"/>
+        <data type="SpectrumDataSetStokes" adapter="K7DataAdapter"/>
+      </K7DataClient>
+    </clients>
+
+    <adapters>
+      <K7DataAdapter>
+        <packet channels="1024"/>
+        <blob channels="1024"/>
+        <start channel="0"/>
+      </K7DataAdapter>
+    </adapters>
+
+    <!--pipelineConfig>
+      <K7Pipeline>
+        <history value="5120"/>
+        <events min="2" max="100000"/>
+      </K7Pipeline>
+    </pipelineConfig-->
+
+    <modules>
+
+      <!--RFI_Clipper active="true" channelRejectionRMS="5.0" spectrumRejectionRMS="6.0">
+        <zeroDMing active="true"/>
+        <BandPassData file="/usr/local/src/pelican-lofar/alfa.bp"/>
+        <Band matching="true"/>
+        <History maximum="10000"/>
+      </RFI_Clipper-->
+
+      <StokesIntegrator>
+        <integrateTimeBins value="1"/>
+        <integrateFrequencyChannels value="1"/>
+      </StokesIntegrator>
+
+      <!--DedispersionModule>
+        <timeBinsPerBufferPow2 value="15"/>
+        <sampleTime seconds="0.00065536"/>
+        <channelBandwidth MHz="-0.390625"/>
+        <dedispersionSamples value="2560"/>
+        <dedispersionStepSize value="1.0"/>
+        <dedispersionMinimum value="0.0"/>
+        <numberOfBuffers value="5"/>
+      </DedispersionModule-->
+
+      <!--DedispersionAnalyser>
+        <detectionThreshold in_sigma="10.0"/>
+        <power2ForBinning value="6"/>
+      </DedispersionAnalyser-->
+
+    </modules>
+
+    <output>
+
+      <dataStreams>
+        <!--stream name="DedispersionDataAnalysis" listeners="DedispersionDataAnalysisOutput"/>
+        <stream name="SignalFoundSpectrum" listeners="SigprocStokesWriter"/-->
+        <stream name="SpectrumDataSetStokes" listeners="SigprocStokesWriter"/>
+      </dataStreams>
+
+      <streamers>
+
+        <!--DedispersionDataAnalysisOutput active="false">
+          <file name="/usr/local/src/pelican-lofar/K7_dm"/>
+        </DedispersionDataAnalysisOutput-->
+
+        <SigprocStokesWriter active="false" writeHeader="false">
+          <samplesPerPacket value="1"/>
+          <nRawPolarisations value="2"/>
+          <dataBitSize value="16"/>
+          <totalComplexSubbands value="512"/>
+          <outputChannelsPerSubband value="1"/>
+          <udpPacketsPerIteration value="128"/>
+          <foff value="-0.390625"/>
+          <tsamp value="0.00065536"/>
+          <dataBits value="32"/>
+          <subbandsPerPacket value="1"/>
+          <file filepath="/usr/local/src/pelican-lofar/K7_fb"/>
+          <params telescope="KAT7" nPolsToWrite="1"/>
+          <TelescopeID value="1"/>
+          <MachineID value="15"/>
+        </SigprocStokesWriter>
+
+      </streamers>
+
+    </output>
+
+  </pipeline>
+
+</configuration>

@@ -1,0 +1,8 @@
+debug/
+release/
+build/
+intel_release
+intel_debug
+.settings/
+./.cproject
+./.project
