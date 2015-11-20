@@ -97,7 +97,7 @@ target_link_libraries(K7Emulator
     ${QT_QTXML_LIBRARY}
     lofarTestLib
 )
-install(TARGETS "ABEmulator" DESTINATION ${BINARY_INSTALL_DIR})
+install(TARGETS "K7Emulator" DESTINATION ${BINARY_INSTALL_DIR})
 
 # ==== Copy files required for testing to the build directory.
 include(${CMAKE_SOURCE_DIR}/cmake/CopyFiles.cmake)

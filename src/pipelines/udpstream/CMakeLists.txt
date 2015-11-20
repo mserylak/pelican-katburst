@@ -32,7 +32,7 @@ set_target_properties(K7Pipeline PROPERTIES
     COMPILE_FLAGS "${OpenMP_CXX_FLAGS}"
     LINK_FLAGS "${OpenMP_CXX_FLAGS}"
 )
-target_link_libraries(ABPipeline
+target_link_libraries(K7Pipeline
     pelicanMdsm
     pelican-lofar_static
     ${PELICAN_LIBRARY}
