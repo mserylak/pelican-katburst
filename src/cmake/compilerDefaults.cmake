@@ -53,7 +53,3 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 if(APPLE)
     add_definitions(-DDARWIN)
 endif(APPLE)
-
-
-
-

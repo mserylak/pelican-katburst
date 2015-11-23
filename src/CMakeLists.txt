@@ -1,5 +1,5 @@
 # === Set the project name and specify the required CMAKE version.
-project(pelican-lofar CXX C Fortran)
+project(pelican-katburst CXX C Fortran)
 cmake_minimum_required(VERSION 2.4)
 
 # === Project version
@@ -15,7 +15,7 @@ enable_testing()
 
 # === Options and defaults.
 if(NOT PELICAN_LOFAR_INSTALL_DIR)
-    set(PELICAN_LOFAR_INSTALL_DIR "pelican-lofar")
+    set(PELICAN_LOFAR_INSTALL_DIR "pelican-katburst")
 endif(NOT PELICAN_LOFAR_INSTALL_DIR)
 
 if(NOT LIBRARY_INSTALL_DIR)
@@ -23,7 +23,7 @@ if(NOT LIBRARY_INSTALL_DIR)
 endif(NOT LIBRARY_INSTALL_DIR)
 
 if(NOT INCLUDE_INSTALL_DIR)
-    set(INCLUDE_INSTALL_DIR "${PELICAN_LOFAR_INSTALL_DIR}/include/pelican-lofar")
+    set(INCLUDE_INSTALL_DIR "${PELICAN_LOFAR_INSTALL_DIR}/include/pelican-katburst")
 endif(NOT INCLUDE_INSTALL_DIR)
 
 if(NOT BINARY_INSTALL_DIR)
