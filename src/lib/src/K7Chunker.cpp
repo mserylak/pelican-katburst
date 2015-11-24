@@ -129,7 +129,7 @@ void K7Chunker::next(QIODevice* device)
             {
                 previousTimestamp = _startTimestamp = _startTimestamp == 0 ? timestamp : _startTimestamp;
                 previousAccumulation = _startAccumulation = _startAccumulation == 0 ? accumulation : _startAccumulation;
-                std::cout << "UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
+                //std::cout << "UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
             }
 
             // Sanity check in seqid. If the seconds counter is 0xFFFFFFFFFFFFFFFF,
@@ -204,7 +204,7 @@ void K7Chunker::next(QIODevice* device)
         // Must discard the datagram if there is no available space.
         if (!isActive()) return;
         socket->readDatagram(0, 0);
-        std::cout << "K7Chunker::next(): Writable data not valid, discarding packets." << std::endl;
+        //std::cout << "K7Chunker::next(): Writable data not valid, discarding packets." << std::endl;
     }
 
     // Update _startTime

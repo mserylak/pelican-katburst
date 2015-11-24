@@ -33,14 +33,13 @@ K7Pipeline::~K7Pipeline()
 //    delete _rfiClipper;
 }
 
-// Initialises the pipeline, creating required modules and data blobs,
-// and requesting remote data.
+// Initialises the pipeline, creating required modules and data blobs, and requesting remote data.
 void K7Pipeline::init()
 {
     ConfigNode c = config(QString("K7Pipeline"));
     // history indicates the number of datablobs to keep (iterations of run())
     // it should be Dedispersion Buffer size (in Blobs)*number of Dedispersion Buffers
-//    unsigned int history = c.getOption("history", "value", "10").toUInt();
+    unsigned int history = c.getOption("history", "value", "10").toUInt();
 //    _minEventsFound = c.getOption("events", "min", "5").toUInt();
 //    _maxEventsFound = c.getOption("events", "max", "5").toUInt();
 
@@ -51,8 +50,8 @@ void K7Pipeline::init()
 //    _dedispersionAnalyser = (DedispersionAnalyser*) createModule("DedispersionAnalyser");
 //    _dedispersionModule->connect( boost::bind( &K7Pipeline::dedispersionAnalysis, this, _1 ) );
 //    _dedispersionModule->unlockCallback( boost::bind( &K7Pipeline::updateBufferLock, this, _1 ) );
-//    _stokesData = createBlobs<SpectrumDataSetStokes>("SpectrumDataSetStokes", history);
-//    _stokesBuffer = new LockingPtrContainer<SpectrumDataSetStokes>(&_stokesData);
+    _stokesData = createBlobs<SpectrumDataSetStokes>("SpectrumDataSetStokes", history);
+    _stokesBuffer = new LockingPtrContainer<SpectrumDataSetStokes>(&_stokesData);
     _intStokes = (SpectrumDataSetStokes *) createBlob("SpectrumDataSetStokes");
     _weightedIntStokes = (WeightedSpectrumDataSet*) createBlob("WeightedSpectrumDataSet");
 

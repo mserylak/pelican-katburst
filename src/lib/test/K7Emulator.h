@@ -12,14 +12,6 @@ class ConfigNode;
 
 namespace ampp {
 
-
-// Emulator outputs KATBURST packets using a UDP socket.
-// The default values are:
-// <K7Emulator>
-//     <packet samples="1024" interval="656" />
-//     <signal period="20" />
-//     <connection host="127.0.0.1" port="2000" />
-// </K7Emulator>
 class K7Emulator : public AbstractUdpEmulator
 {
     public:
@@ -33,7 +25,11 @@ class K7Emulator : public AbstractUdpEmulator
         void getPacketData(char*& ptr, unsigned long& size);
 
         // Returns the interval between packets in microseconds.
-        unsigned long interval() {return _interval;}
+        unsigned long interval()
+        {
+            return _interval;
+        }
+
     private:
         uint64_t _UTCtimestamp; // (8-Byte) UTC timestamp in Unix time (seconds from 00:00:00 UTC, Thursday, 1 January 1970).
         uint32_t _accumulationNumber; // (4-Byte) Number of first spectrum since beginning of second denoted by _UTCtimestamp.

@@ -29,7 +29,7 @@ class K7Pipeline : public AbstractPipeline
         // Defines one iteration of the pipeline.
         void run(QHash<QString, DataBlob*>& remoteData);
 
-        /// called internally to free up DataBlobs after they are finished with
+        // called internally to free up DataBlobs after they are finished with
         void updateBufferLock( const QList<DataBlob*>& );
 
     protected:

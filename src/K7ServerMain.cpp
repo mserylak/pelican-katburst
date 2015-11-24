@@ -44,10 +44,7 @@ int main(int argc, char ** argv)
     }
 }
 
-/**
- * @details
- * Create a Pelican Configuration XML document for the lofar data viewer.
- */
+// Create a Pelican Configuration XML document for the K7 server.
 pelican::Config createConfig(int argc, char** argv)
 {
     // Check that argc and argv are nonzero

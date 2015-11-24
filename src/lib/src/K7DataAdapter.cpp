@@ -56,6 +56,10 @@ K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(c
     // Temporary arrays for buffering data from the IO Device.
     _headerBuffer.resize(_headerSize);
     _dataBuffer.resize(_payloadSize);
+
+    // Temporary stuff
+    _counter = 0;
+
 }
 
 
@@ -82,7 +86,7 @@ void K7DataAdapter::deserialise(QIODevice* in)
     K7Packet::Header header;
 
     // Declare variables;
-    unsigned int i, j;
+    unsigned int i, j, k;
     unsigned int nPacketsPerChunk = 0; // Number of UDP packets in chunk/blob.
     unsigned int block = 0;
     unsigned int bytesRead = 0;
@@ -160,6 +164,10 @@ void K7DataAdapter::deserialise(QIODevice* in)
             else bytesRead += temporaryBytesRead;
             if (bytesRead == _payloadSize) break;
         }
+
+std::cout << "counter: " << _counter << " iteration: "<< i << std::endl;
+
+#if 0
         // Read the packet payload from the input device.
         in->read(dataBuffer, _payloadSize);
 
@@ -174,11 +182,16 @@ void K7DataAdapter::deserialise(QIODevice* in)
         {
             data[j] = (float) (dd[j] + dd[j + 1]);
         }
-
     }
+#endif
     // Set the timestamp and sampling rate in the blob.
     blob->setLofarTimestamp(currentTimestamp);
     blob->setBlockRate(_samplingTime);
+
+}
+// Counter for pipeline
+_counter++;
+std::cout << _counter << std::endl;
 }
 
 
@@ -186,7 +199,7 @@ void K7DataAdapter::deserialise(QIODevice* in)
 void K7DataAdapter::_readHeader(char* buffer, K7Packet::Header& header)
 {
     header = *reinterpret_cast<K7Packet::Header*>(buffer);
-    //_printHeader(header);
+    _printHeader(header);
 }
 
 
