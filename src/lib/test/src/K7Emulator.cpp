@@ -116,7 +116,7 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
     {
         _accumulationNumber = _accumulationNumber % packetsPerSecond;
     }
-    std::cout << _UTCtimestamp << " " << _accumulationNumber << " " << _accumulationRate << std::endl;
+    //std::cout << _UTCtimestamp << " " << _accumulationNumber << " " << _accumulationRate << std::endl;
 }
 
 } // namespace ampp

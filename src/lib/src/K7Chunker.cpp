@@ -158,7 +158,7 @@ void K7Chunker::next(QIODevice* device)
             else if (difference > rate)
             {
                 // -1 since it includes the received packet as well
-                lostPackets = (difference / rate);
+                lostPackets = (difference / rate) - 1;
             }
 
             if (lostPackets > 0)
