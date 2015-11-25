@@ -18,14 +18,14 @@
         <blob channels="1024"/>
         <start channel="0"/>
       </K7DataAdapter>
-    </adapters>
+    </adapters>integrateFrequencyChannels
 
-    <!--pipelineConfig>
+    <pipelineConfig>
       <K7Pipeline>
         <history value="5120"/>
         <events min="2" max="100000"/>
       </K7Pipeline>
-    </pipelineConfig-->
+    </pipelineConfig>
 
     <modules>
 
@@ -72,21 +72,25 @@
           <file name="/usr/local/src/pelican-lofar/K7_dm"/>
         </DedispersionDataAnalysisOutput-->
 
-        <SigprocStokesWriter active="false" writeHeader="false">
-          <samplesPerPacket value="1"/>
-          <nRawPolarisations value="2"/>
-          <dataBitSize value="16"/>
+        <SigprocStokesWriter active="true" writeHeader="true">
+          <subbandsPerPacket value="1024"/>
           <totalComplexSubbands value="512"/>
+          <clock value="400"/>
+          <integrateTimeBins value="32"/>
+          <integrateFrequencyChannels value="1"/>
           <outputChannelsPerSubband value="1"/>
+          <nRawPolarisations value="2"/>
+          <dataBits value="32"/>
+          <samplesPerPacket value="1"/>
+          <tsamp value="0.00008192"/>
+          <params nPolsToWrite="1"/>
+          <dataBitSize value="16"/>
+          <outputChannelsPerSubband value="1024"/>
           <udpPacketsPerIteration value="128"/>
           <foff value="-0.390625"/>
-          <tsamp value="0.00065536"/>
-          <dataBits value="32"/>
-          <subbandsPerPacket value="1"/>
-          <file filepath="/usr/local/src/pelican-lofar/K7_fb"/>
-          <params telescope="KAT7" nPolsToWrite="1"/>
-          <TelescopeID value="1"/>
-          <MachineID value="15"/>
+          <TelescopeID value="13"/>
+          <MachineID value="13"/>
+          <file filepath="/home/serylak/work/git/pelican-katburst/K7_fb"/>
         </SigprocStokesWriter>
 
       </streamers>

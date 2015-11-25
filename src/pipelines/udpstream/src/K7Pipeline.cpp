@@ -15,33 +15,32 @@
 using namespace pelican;
 using namespace ampp;
 
-// The constructor. It is good practice to initialise any pointer
-// members to zero.
+// The constructor. It is good practice to initialise any pointer members to zero.
 K7Pipeline::K7Pipeline(const QString& streamIdentifier) : AbstractPipeline(), _streamIdentifier(streamIdentifier)
 {
-//    _rfiClipper = 0;
-//    _dedispersionModule = 0;
-//    _dedispersionAnalyser = 0;
+    _rfiClipper = 0;
+    _dedispersionModule = 0;
+    _dedispersionAnalyser = 0;
     _counter = 0;
 }
 
 // The destructor must clean up and created modules and any local dataBlob's created.
 K7Pipeline::~K7Pipeline()
 {
-//    delete _dedispersionAnalyser;
-//    delete _dedispersionModule;
-//    delete _rfiClipper;
+    delete _dedispersionAnalyser;
+    delete _dedispersionModule;
+    delete _rfiClipper;
 }
 
 // Initialises the pipeline, creating required modules and data blobs, and requesting remote data.
 void K7Pipeline::init()
 {
     ConfigNode c = config(QString("K7Pipeline"));
-    // history indicates the number of datablobs to keep (iterations of run())
-    // it should be Dedispersion Buffer size (in Blobs)*number of Dedispersion Buffers
+    // History indicates the number of datablobs to keep (iterations of run()).
+    // It should be dedispersion buffer size (in blobs) * number of dedispersion buffers.
     unsigned int history = c.getOption("history", "value", "10").toUInt();
-//    _minEventsFound = c.getOption("events", "min", "5").toUInt();
-//    _maxEventsFound = c.getOption("events", "max", "5").toUInt();
+    _minEventsFound = c.getOption("events", "min", "5").toUInt();
+    _maxEventsFound = c.getOption("events", "max", "5").toUInt();
 
     // Create the pipeline modules and any local data blobs.
 //    _rfiClipper = (RFI_Clipper *) createModule("RFI_Clipper");
