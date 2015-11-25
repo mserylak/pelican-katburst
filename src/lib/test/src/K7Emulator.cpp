@@ -108,15 +108,13 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
         *(ptr + 22 + (i * 8)) = (unsigned char)  (XYim & 0x00000000000000FF);
         *(ptr + 23 + (i * 8)) = (unsigned char) ((XYim & 0x000000000000FF00) >> 8);
     }
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    _UTCtimestamp = tv.tv_sec; 
     _accumulationNumber += _accumulationRate;
     if (_accumulationNumber >= packetsPerSecond)
     {
         _accumulationNumber = _accumulationNumber % packetsPerSecond;
+        _UTCtimestamp += 1;
     }
-    //std::cout << _UTCtimestamp << " " << _accumulationNumber << " " << _accumulationRate << std::endl;
+    std::cout << _UTCtimestamp << " " << _accumulationNumber << " " << _accumulationRate << std::endl;
 }
 
 } // namespace ampp
