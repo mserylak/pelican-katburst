@@ -32,7 +32,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 elseif(CMAKE_CXX_COMPILER MATCHES icpc)
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DQT_NO_DEBUG -DQT_NO_DEBUG_OUTPUT")
     include_directories(/usr/include/x86_64-linux-gnu/c++/4.9)
-    add_definitions(-Wall -std=c99)
+    add_definitions(-Wall -std=gnu99)
     add_definitions(-Wcheck)
     add_definitions(-wd1125) # virtual override intended warning
     add_definitions(-wd1572) # remove floating-pointe equality warning.
