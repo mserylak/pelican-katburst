@@ -87,7 +87,7 @@ endif(CUDA_FOUND)
 #add_test(lofarTest lofarTest)
 #
 
-# ==== Create the ALFABURST binary which sends simulated data.
+# ==== Create the KATBURST binary which sends simulated data.
 add_executable(K7Emulator src/K7EmulatorMain.cpp)
 target_link_libraries(K7Emulator
     ${PELICAN_LIBRARY}
