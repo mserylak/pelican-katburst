@@ -33,8 +33,6 @@ class K7DataAdapter : public AbstractStreamAdapter
         // Prints the header to standard out (for debugging).
         void _printHeader(const K7Packet::Header& header);
 
-        static TimerData _adapterTime;
-
     private:
 
         // Returns an error message suitable for throwing.

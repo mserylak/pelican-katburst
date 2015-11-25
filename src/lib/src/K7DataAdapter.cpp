@@ -14,9 +14,6 @@ namespace pelican {
 namespace ampp {
 
 
-//TimerData K7DataAdapter::_adapterTime;
-
-
 // Construct the signal data adapter.
 K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(config)
 {
@@ -158,6 +155,9 @@ void K7DataAdapter::deserialise(QIODevice* in)
             //std::cout << "difference " << std::fixed << std::setprecision(10) << (_lastTimestamp-currentTimestamp)/_samplingTime << std::endl;
             //std::cout << "expected difference " << std::fixed << std::setprecision(10) << (_expectedLastTimestamp-currentTimestamp)/_samplingTime << std::endl;
 
+            // Set the timestamp and sampling rate in the blob.
+            blob->setLofarTimestamp(currentTimestamp);
+            blob->setBlockRate(_samplingTime);
         }
 
         // Read the useful data.
@@ -173,23 +173,18 @@ void K7DataAdapter::deserialise(QIODevice* in)
 #if 0
         // Read the packet payload from the input device.
         in->read(dataBuffer, _payloadSize);
+#endif
 
         // Write out spectrum to blob.
-
         unsigned short int* dd = (unsigned short int*) dataBuffer;
-
         // Assign data (pointer) to a pointer to the spectrum data for the specified time block, sub-band and polarisation.
         data = (float*) blob->spectrumData(i, 0, 0);
-
         for (j = 0; j < _nChannels; j++)
         {
             data[j] = (float) (dd[j] + dd[j + 1]);
         }
-#endif
+
     }
-    // Set the timestamp and sampling rate in the blob.
-    blob->setLofarTimestamp(currentTimestamp);
-    blob->setBlockRate(_samplingTime);
 }
 
 // Reads the UDP packet header from the IO device.

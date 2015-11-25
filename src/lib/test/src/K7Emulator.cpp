@@ -89,10 +89,10 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
     *(ptr + 15) = (unsigned char) ((_accumulationRate & 0x00000000FF000000) >> 24);
 
     // Fill the packet payload with data.
-    int8_t XXre = 0;
-    int8_t YYre = 0;
-    int8_t XYre = 0;
-    int8_t XYim = 0;
+    int8_t XXre = 2;
+    int8_t YYre = 2;
+    int8_t XYre = 2;
+    int8_t XYim = 2;
     for (unsigned i = 0; i < _samples; ++i)
     {
         // Set XXre
