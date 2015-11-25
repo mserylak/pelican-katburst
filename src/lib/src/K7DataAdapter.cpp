@@ -29,7 +29,7 @@ K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(c
     _packetSize = sizeof(K7Packet);
     _headerSize = sizeof(K7Packet::Header);
     _payloadSize = sizeof(K7Packet().data);
-    _packetsPerSecond = 390625; // Number of Nyquist-sampled values leaving F-engines per second. It should be 390625 but there are rounding issues.
+    _packetsPerSecond = 390625; // Number of Nyquist-sampled values leaving F-engines per second.
     //std::cout << "_packetSize " << _packetSize << std::endl;
     //std::cout << "_headerSize " << _headerSize << std::endl;
     //std::cout << "_payloadSize " << _payloadSize << std::endl;
@@ -58,9 +58,6 @@ K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(c
     // Temporary arrays for buffering data from the IO Device.
     _headerBuffer.resize(_headerSize);
     _dataBuffer.resize(_payloadSize);
-
-    // Temporary stuff
-    _counter = 0;
 
 }
 
@@ -137,19 +134,19 @@ void K7DataAdapter::deserialise(QIODevice* in)
         {
             // Set the sampling time for precise timestamp calculation.
             _samplingTime = 1.0 * header.accumulationRate / _packetsPerSecond;
-            std::cout << "_samplingTime " << _samplingTime << std::endl;
+            //std::cout << "_samplingTime " << _samplingTime << std::endl;
 
             // Get the timestamp from UDP packet header.
-            std::cout << "header.UTCtimestamp " << std::fixed << std::setprecision(10) << header.UTCtimestamp << std::endl;
-            std::cout << "header.accumulationNumber " << std::fixed << std::setprecision(10) << header.accumulationNumber << std::endl;
-            std::cout << "header.accumulationRate " << std::fixed << std::setprecision(10) << header.accumulationRate << std::endl;
+            //std::cout << "header.UTCtimestamp " << std::fixed << std::setprecision(10) << header.UTCtimestamp << std::endl;
+            //std::cout << "header.accumulationNumber " << std::fixed << std::setprecision(10) << header.accumulationNumber << std::endl;
+            //std::cout << "header.accumulationRate " << std::fixed << std::setprecision(10) << header.accumulationRate << std::endl;
 
             // Calculate timestamp of first packet in the chunk.
             currentTimestamp = 1.0 * header.UTCtimestamp + (1.0 * header.accumulationNumber / _packetsPerSecond);
-            std::cout << "currentTimestamp " << std::fixed << std::setprecision(10) << currentTimestamp << std::endl;
+            //std::cout << "currentTimestamp " << std::fixed << std::setprecision(10) << currentTimestamp << std::endl;
 
-            _expectedLastTimestamp = currentTimestamp + (nPacketsPerChunk * _samplingTime);
-            std::cout << "_expectedLastTimestamp " << std::fixed << std::setprecision(10) << _expectedLastTimestamp << std::endl;
+            _expectedLastTimestamp = currentTimestamp + ((nPacketsPerChunk + 1) * _samplingTime);
+            //std::cout << "_expectedLastTimestamp " << std::fixed << std::setprecision(10) << _expectedLastTimestamp << std::endl;
 
             // Check if the data is out of sync. During first iteration it will always complain.
             if (currentTimestamp - _lastTimestamp > _samplingTime)
@@ -157,9 +154,9 @@ void K7DataAdapter::deserialise(QIODevice* in)
                 std::cout << "K7DataAdapter::deserialise(): data out of sequence -- " << std::fixed << std::setprecision(10) << currentTimestamp - _lastTimestamp << std::endl;
             }
             _lastTimestamp = currentTimestamp + ((nPacketsPerChunk + 1) * _samplingTime);
-            std::cout << "_lastTimestamp " << std::fixed << std::setprecision(10) << _lastTimestamp << std::endl;
-            std::cout << "difference " << std::fixed << std::setprecision(10) << (_lastTimestamp-currentTimestamp)/_samplingTime << std::endl;
-            std::cout << "expected difference " << std::fixed << std::setprecision(10) << (_expectedLastTimestamp-currentTimestamp)/_samplingTime << std::endl;
+            //std::cout << "_lastTimestamp " << std::fixed << std::setprecision(10) << _lastTimestamp << std::endl;
+            //std::cout << "difference " << std::fixed << std::setprecision(10) << (_lastTimestamp-currentTimestamp)/_samplingTime << std::endl;
+            //std::cout << "expected difference " << std::fixed << std::setprecision(10) << (_expectedLastTimestamp-currentTimestamp)/_samplingTime << std::endl;
 
         }
 
@@ -193,9 +190,6 @@ void K7DataAdapter::deserialise(QIODevice* in)
     // Set the timestamp and sampling rate in the blob.
     blob->setLofarTimestamp(currentTimestamp);
     blob->setBlockRate(_samplingTime);
-// Counter for pipeline
-_counter++;
-std::cout << "" << std::endl;
 }
 
 // Reads the UDP packet header from the IO device.

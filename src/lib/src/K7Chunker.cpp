@@ -204,7 +204,7 @@ void K7Chunker::next(QIODevice* device)
         // Must discard the datagram if there is no available space.
         if (!isActive()) return;
         socket->readDatagram(0, 0);
-        //std::cout << "K7Chunker::next(): Writable data not valid, discarding packets." << std::endl;
+        std::cout << "K7Chunker::next(): Writable data not valid, discarding packets." << std::endl;
     }
 
     // Update _startTime

@@ -160,3 +160,4 @@ void K7Pipeline::updateBufferLock( const QList<DataBlob*>& freeData )
     }
 }
 #endif
+

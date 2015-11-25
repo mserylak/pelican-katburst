@@ -12,8 +12,8 @@ K7Emulator::K7Emulator(const ConfigNode& configNode) : AbstractUdpEmulator(confi
 {
     // Initialise defaults.
     _samples = configNode.getOption("packet", "samples", "1024").toULong(); // Number of spectral channels per packet.
-    _interval = configNode.getOption("packet", "interval", "656").toULong(); // Interval in microseconds.
-    _accumulationRate = 256;
+    _interval = configNode.getOption("packet", "interval", "82").toULong(); // Interval in microseconds.
+    _accumulationRate = 32;
     _accumulationNumber = 0;
 
     // Set the packet size in bytes (each sample is 8 bytes + 16 for header).
@@ -114,7 +114,7 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
         _accumulationNumber = _accumulationNumber % packetsPerSecond;
         _UTCtimestamp += 1;
     }
-    std::cout << _UTCtimestamp << " " << _accumulationNumber << " " << _accumulationRate << std::endl;
+    //std::cout << _UTCtimestamp << " " << _accumulationNumber << " " << _accumulationRate << std::endl;
 }
 
 } // namespace ampp

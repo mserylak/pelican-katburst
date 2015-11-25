@@ -56,7 +56,6 @@ class K7DataAdapter : public AbstractStreamAdapter
         unsigned int _nChannels;
         unsigned int _nPolarisations;
         unsigned long int _packetsPerSecond;
-        unsigned long int _counter;
         double _samplingTime;
         double _lastTimestamp;
         double _expectedLastTimestamp;
