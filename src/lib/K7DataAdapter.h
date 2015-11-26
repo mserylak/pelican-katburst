@@ -26,15 +26,13 @@ class K7DataAdapter : public AbstractStreamAdapter
         void deserialise(QIODevice* in);
 
     private:
-
-        /// Read the UDP packet header from a buffer read from the IO device.
+        // Read the UDP packet header from a buffer read from the IO device.
         void _readHeader(char* buffer, K7Packet::Header& header);
 
         // Prints the header to standard out (for debugging).
         void _printHeader(const K7Packet::Header& header);
 
     private:
-
         // Returns an error message suitable for throwing.
         QString _err(QString message)
         {

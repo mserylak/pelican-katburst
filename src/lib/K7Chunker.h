@@ -2,9 +2,7 @@
 #define K7CHUNKER_H
 
 #include "K7Packet.h"
-
 #include "pelican/server/AbstractChunker.h"
-
 #include <QtCore/QString>
 #include <QtCore/QObject>
 #include <QtCore/QMutex>

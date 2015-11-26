@@ -7,9 +7,6 @@
 #include "DedispersionAnalyser.h"
 #include "WeightedSpectrumDataSet.h"
 #include "StokesIntegrator.h"
-#ifdef TIMING_ENABLED
-#include "timer.h"
-#endif
 
 namespace pelican {
 namespace ampp {
@@ -29,7 +26,7 @@ class K7Pipeline : public AbstractPipeline
         // Defines one iteration of the pipeline.
         void run(QHash<QString, DataBlob*>& remoteData);
 
-        // called internally to free up DataBlobs after they are finished with
+        // Called internally to free up DataBlobs after they are finished with.
         void updateBufferLock( const QList<DataBlob*>& );
 
     protected:
@@ -56,12 +53,6 @@ class K7Pipeline : public AbstractPipeline
         unsigned int _iteration;
         unsigned int _minEventsFound;
         unsigned int _maxEventsFound;
-
-#ifdef TIMING_ENABLED
-        TimerData _rfiClipperTime;
-        TimerData _dedispersionTime;
-        TimerData _totalTime;
-#endif
 };
 
 } // namespace ampp

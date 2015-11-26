@@ -1,7 +1,6 @@
 #include "K7DataAdapter.h"
 #include "SpectrumDataSet.h"
 #include "pelican/utility/ConfigNode.h"
-
 #include <iomanip>
 #include <cmath>
 #include <omp.h>
@@ -12,7 +11,6 @@
 
 namespace pelican {
 namespace ampp {
-
 
 // Construct the signal data adapter.
 K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(config)
@@ -57,7 +55,6 @@ K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(c
     _dataBuffer.resize(_payloadSize);
 
 }
-
 
 // De-serialise a chunk of data from the input device.
 void K7DataAdapter::deserialise(QIODevice* in)
@@ -193,7 +190,6 @@ void K7DataAdapter::_readHeader(char* buffer, K7Packet::Header& header)
     header = *reinterpret_cast<K7Packet::Header*>(buffer);
     //_printHeader(header);
 }
-
 
 // Prints UDP packet header.
 void K7DataAdapter::_printHeader(const K7Packet::Header& header)

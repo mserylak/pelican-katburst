@@ -1,21 +1,17 @@
 #include "K7Chunker.h"
 #include "K7Packet.h"
-
 #include <QtNetwork/QUdpSocket>
-
 #include <QtCore/QTextStream>
 #include <QtCore/QFile>
 #include <QtCore/QString>
 #include <QtCore/QIODevice>
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>
-
 #include <cstdio>
 #include <iostream>
 
 namespace pelican {
 namespace ampp {
-
 
 // Construct the chunker.
 K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
@@ -52,7 +48,6 @@ K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
     std::cout << "Starting K7Server..." << std::endl;
 }
 
-
 // Constructs a new QIODevice (in this case a QUdpSocket) and returns it
 // after binding the socket to the port specified in the XML node and read by
 // the constructor of the abstract chunker.
@@ -65,7 +60,6 @@ QIODevice* K7Chunker::newDevice()
 
     return socket;
 }
-
 
 // Gets the next chunk of data from the UDP socket (if it exists).
 void K7Chunker::next(QIODevice* device)
@@ -212,7 +206,6 @@ void K7Chunker::next(QIODevice* device)
     _startAccumulation = previousAccumulation;
 }
 
-
 // Generates an empty UDP packet with no time stamp.
 void K7Chunker::updateEmptyPacket(K7Packet& packet, unsigned long int timestamp, unsigned int accumulation, unsigned int rate)
 {
@@ -220,7 +213,6 @@ void K7Chunker::updateEmptyPacket(K7Packet& packet, unsigned long int timestamp,
     packet.header.accumulationNumber = accumulation;
     packet.header.accumulationRate = rate;
 }
-
 
 // Write packet to WritableData object.
 int K7Chunker::writePacket(WritableData *writer, K7Packet& packet, unsigned int packetSize, unsigned int offset)
