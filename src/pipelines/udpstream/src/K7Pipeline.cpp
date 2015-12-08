@@ -18,37 +18,37 @@ using namespace ampp;
 // The constructor. It is good practice to initialise any pointer members to zero.
 K7Pipeline::K7Pipeline(const QString& streamIdentifier) : AbstractPipeline(), _streamIdentifier(streamIdentifier)
 {
-//    _rfiClipper = 0;
-//    _dedispersionModule = 0;
-//    _dedispersionAnalyser = 0;
+    _rfiClipper = 0;
+    _dedispersionModule = 0;
+    _dedispersionAnalyser = 0;
     _counter = 0;
 }
 
 // The destructor must clean up and created modules and any local dataBlob's created.
 K7Pipeline::~K7Pipeline()
 {
-//    delete _dedispersionAnalyser;
-//    delete _dedispersionModule;
-//    delete _rfiClipper;
+    delete _dedispersionAnalyser;
+    delete _dedispersionModule;
+    delete _rfiClipper;
 }
 
 // Initialises the pipeline, creating required modules and data blobs, and requesting remote data.
 void K7Pipeline::init()
 {
     ConfigNode c = config(QString("K7Pipeline"));
-    // History indicates the number of datablobs to keep (iterations of run()).
+    // History indicates the number of datablobs to keep (iterations of run()).        <- HERE LIES THE PROBLEM!
     // It should be dedispersion buffer size (in blobs) * number of dedispersion buffers.
     unsigned int history = c.getOption("history", "value", "10").toUInt();
     _minEventsFound = c.getOption("events", "min", "5").toUInt();
     _maxEventsFound = c.getOption("events", "max", "5").toUInt();
 
     // Create the pipeline modules and any local data blobs.
-//    _rfiClipper = (RFI_Clipper *) createModule("RFI_Clipper");
+    _rfiClipper = (RFI_Clipper *) createModule("RFI_Clipper");
     _stokesIntegrator = (StokesIntegrator *) createModule("StokesIntegrator");
-//    _dedispersionModule = (DedispersionModule*) createModule("DedispersionModule");
-//    _dedispersionAnalyser = (DedispersionAnalyser*) createModule("DedispersionAnalyser");
-//    _dedispersionModule->connect( boost::bind( &K7Pipeline::dedispersionAnalysis, this, _1 ) );
-//    _dedispersionModule->unlockCallback( boost::bind( &K7Pipeline::updateBufferLock, this, _1 ) );
+    _dedispersionModule = (DedispersionModule*) createModule("DedispersionModule");
+    _dedispersionAnalyser = (DedispersionAnalyser*) createModule("DedispersionAnalyser");
+    _dedispersionModule->connect( boost::bind( &K7Pipeline::dedispersionAnalysis, this, _1 ) );
+    _dedispersionModule->unlockCallback( boost::bind( &K7Pipeline::updateBufferLock, this, _1 ) );
     _stokesData = createBlobs<SpectrumDataSetStokes>("SpectrumDataSetStokes", history);
     _stokesBuffer = new LockingPtrContainer<SpectrumDataSetStokes>(&_stokesData);
     _intStokes = (SpectrumDataSetStokes *) createBlob("SpectrumDataSetStokes");
@@ -72,8 +72,8 @@ void K7Pipeline::run(QHash<QString, DataBlob*>& remoteData)
     _weightedIntStokes->reset(stokesBuf);
 
     dataOutput(_intStokes, "SpectrumDataSetStokes");
-//    _rfiClipper->run(_weightedIntStokes);
-//    _dedispersionModule->dedisperse(_weightedIntStokes);
+    _rfiClipper->run(_weightedIntStokes);
+    _dedispersionModule->dedisperse(_weightedIntStokes);
     if (0 == _counter % 100)
     {
         std::cout << _counter << " chunks processed." << std::endl;

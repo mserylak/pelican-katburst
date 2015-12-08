@@ -81,4 +81,3 @@ set(PDFLATEX_COMPILER TRUE)
 add_doxygen_target(api DoxyfileAPI)
 add_doxygen_target(developer DoxyfileDeveloper)
 add_doxygen_target(user DoxyfileUser)
-

@@ -18,11 +18,11 @@
         <blob channels="1024"/>
         <start channel="0"/>
       </K7DataAdapter>
-    </adapters>integrateFrequencyChannels
+    </adapters>
 
     <pipelineConfig>
       <K7Pipeline>
-        <history value="5120"/>
+        <history value="1120"/>
         <events min="2" max="100000"/>
       </K7Pipeline>
     </pipelineConfig>
@@ -43,7 +43,7 @@
 
       <!--DedispersionModule>
         <timeBinsPerBufferPow2 value="15"/>
-        <sampleTime seconds="0.00065536"/>
+        <sampleTime seconds="0.00008192"/>
         <channelBandwidth MHz="-0.390625"/>
         <dedispersionSamples value="2560"/>
         <dedispersionStepSize value="1.0"/>
@@ -88,7 +88,7 @@
           <outputChannelsPerSubband value="1024"/>
           <udpPacketsPerIteration value="128"/>
           <foff value="-0.390625"/>
-          <TelescopeID value="13"/>
+          <TelescopeID value="64"/>
           <MachineID value="13"/>
           <file filepath="/home/serylak/work/git/pelican-katburst/K7_fb"/>
         </SigprocStokesWriter>

@@ -3,6 +3,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # === Create library of pipelines.
 set(pipeline_lib_src
     src/EmptyPipeline.cpp
+    src/K7UdpPipeline.cpp
 )
 if(CUDA_FOUND)
     list(APPEND pipeline_lib_src
@@ -43,6 +44,27 @@ target_link_libraries(K7Pipeline
     ${QT_QTCORE_LIBRARY}
 )
 install(TARGETS K7Pipeline
+		DESTINATION ${BINARY_INSTALL_DIR})
+endif(CUDA_FOUND)
+
+# === Build the KATBURST UDP pipeline binary
+if(CUDA_FOUND)
+add_executable(K7UdpPipeline src/K7UdpPipelineMain.cpp)
+set_target_properties(K7UdpPipeline PROPERTIES
+    COMPILE_FLAGS "${OpenMP_CXX_FLAGS}"
+    LINK_FLAGS "${OpenMP_CXX_FLAGS}"
+)
+target_link_libraries(K7UdpPipeline
+    pelicanMdsm
+    pelican-lofar_static
+    ${PELICAN_LIBRARY}
+    ${FFTW3_FFTW_LIBRARY}
+    ${FFTW3_FFTWF_LIBRARY}
+    ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTXML_LIBRARY}
+    ${QT_QTCORE_LIBRARY}
+)
+install(TARGETS K7UdpPipeline
 		DESTINATION ${BINARY_INSTALL_DIR})
 endif(CUDA_FOUND)
 

@@ -55,12 +55,17 @@ class K7Chunker : public AbstractChunker
         unsigned int _packetSize;
         unsigned int _headerSize;
         unsigned int _bytesStream;
+        unsigned int _packetSizeStream;
         unsigned long int _startTimestamp;
         unsigned long int _startAccumulation;
         unsigned int _clock;
         unsigned long int _packetsPerSecond;
         unsigned int _chunkerCounter;
         unsigned long int _chunksProcessed;
+        unsigned int _channelStart;
+        unsigned int _channelEnd;
+        unsigned int _nChannels;
+        unsigned int _streamChannels;
         K7Packet _emptyPacket;
 };
 

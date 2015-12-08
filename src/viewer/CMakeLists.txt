@@ -67,4 +67,3 @@ add_subdirectory(test)
 
 include(CopyFiles)
 copy_files(${CMAKE_CURRENT_SOURCE_DIR}/data/*.* . viewerDataFiles)
-

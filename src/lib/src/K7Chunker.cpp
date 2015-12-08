@@ -18,7 +18,9 @@ K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
 {
     // Check the configuration type matches the class name.
     if (config.type() != "K7Chunker")
+    {
         throw _err("K7Chunker(): Invalid or missing XML configuration.");
+    }
 
     // Packet dimensions.
     _packetSize = sizeof(K7Packet);
@@ -26,9 +28,24 @@ K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
     _nPackets = config.getOption("udpPacketsPerIteration", "value", "128").toUInt(); // Number of UDP packets collected into one chunk (iteration of the pipeline).
     _packetsPerSecond = 390625; // Number of Nyquist-sampled values leaving F-engines per second.
 
-    // And the output streams
-    _bytesStream = _packetSize - _headerSize;
-    _byte1OfStream = 0;
+    // Total number of channels per incoming packet.
+    _nChannels = config.getOption("channelsPerPacket", "value", "1024").toUInt();
+
+    // Channel range for the output stream (counted from 0).
+    _channelStart = config.getOption("stream", "channelStart", "0").toUInt();
+    _channelEnd = config.getOption("stream", "channelEnd", "1023").toUInt();
+    if ( (_channelEnd >= _nChannels) || (_channelStart >= _channelEnd) || (_channelStart < 0) || (_channelEnd < 0) )
+    {
+        throw _err("K7Chunker(): Invalid channel ranges.");
+    }
+
+    // Calculate the size of the packet for the output stream...
+    _streamChannels = _channelEnd - _channelStart + 1;
+    _packetSizeStream = _streamChannels * sizeof(uint64_t) + _headerSize; // Since there is only one sample per packet and no raw polarizations buy pseudo-Stoles both values are 1.
+
+    // ...and the output streams.
+    _bytesStream = _packetSizeStream - _headerSize;
+    _byte1OfStream = _channelStart * sizeof(uint64_t);
 
     // Initialise class variables.
     _startTimestamp = _startAccumulation = 0;
@@ -56,7 +73,9 @@ QIODevice* K7Chunker::newDevice()
     QUdpSocket* socket = new QUdpSocket;
 
     if (!socket->bind(port(), QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint ))
+    {
         std::cerr << "K7Chunker::newDevice(): Unable to bind to UDP port!" << socket->errorString().toStdString() << std::endl;
+    }
 
     return socket;
 }
@@ -91,7 +110,7 @@ void K7Chunker::next(QIODevice* device)
     _startTimestamp = 0;
 
     // Get writable buffer space for the chunk.
-    WritableData writableData = getDataStorage(_nPackets * _packetSize, chunkTypes().at(0));
+    WritableData writableData = getDataStorage(_nPackets * _packetSizeStream, chunkTypes().at(0));
     if (writableData.isValid())
     {
         // Loop over the number of UDP packets to put in a chunk.
@@ -169,7 +188,7 @@ void K7Chunker::next(QIODevice* device)
                 previousTimestamp = (previousAccumulation < _packetsPerSecond) ? previousTimestamp : previousTimestamp + 1;
                 previousAccumulation = previousAccumulation % _packetsPerSecond;
                 updateEmptyPacket(_emptyPacket, previousTimestamp, previousAccumulation, rate);
-                offsetStream = writePacket(&writableData, _emptyPacket, _packetSize, offsetStream);
+                offsetStream = writePacket(&writableData, _emptyPacket, _packetSizeStream, offsetStream);
             }
             i += packetCounter;
 
@@ -180,7 +199,7 @@ void K7Chunker::next(QIODevice* device)
                 // Generate Stream packet
                 outputPacket.header = currentPacket.header;
                 memcpy((void*)outputPacket.data, &currentPacket.data[_byte1OfStream], _bytesStream);
-                offsetStream = writePacket(&writableData, outputPacket, _packetSize, offsetStream);
+                offsetStream = writePacket(&writableData, outputPacket, _packetSizeStream, offsetStream);
                 previousTimestamp = timestamp;
                 previousAccumulation = accumulation;
             }

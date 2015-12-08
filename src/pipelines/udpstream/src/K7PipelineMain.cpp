@@ -1,9 +1,8 @@
-#include <QtCore/QCoreApplication>
-
 #include "pelican/core/PipelineApplication.h"
 #include "K7Pipeline.h"
 #include "K7DataAdapter.h"
 #include "K7DataClient.h"
+#include <QtCore/QCoreApplication>
 
 using namespace pelican;
 using namespace pelican::ampp;
