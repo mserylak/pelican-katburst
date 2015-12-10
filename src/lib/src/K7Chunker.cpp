@@ -41,11 +41,15 @@ K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
 
     // Calculate the size of the packet for the output stream...
     _streamChannels = _channelEnd - _channelStart + 1;
-    _packetSizeStream = _streamChannels * sizeof(uint64_t) + _headerSize; // Since there is only one sample per packet and no raw polarizations buy pseudo-Stoles both values are 1.
+    std::cout << "_streamChannels " << _streamChannels << std::endl;
+    _packetSizeStream = _streamChannels * sizeof(uint64_t) + _headerSize; // Since there is only one sample per packet and no raw polarizations but pseudo-Stokes both values are 1.
+    std::cout << "_packetSizeStream " << _packetSizeStream << std::endl;
 
     // ...and the output streams.
     _bytesStream = _packetSizeStream - _headerSize;
+    std::cout << "_bytesStream " << _bytesStream << std::endl;
     _byte1OfStream = _channelStart * sizeof(uint64_t);
+    std::cout << "_byte1OfStream " << _byte1OfStream << std::endl;
 
     // Initialise class variables.
     _startTimestamp = _startAccumulation = 0;
@@ -206,11 +210,11 @@ void K7Chunker::next(QIODevice* device)
         }
         _chunksProcessed++;
         _chunkerCounter++;
-        if (_chunkerCounter % 100 == 0)
-        {
-            std::cout << _chunksProcessed << " chunks processed." << std::endl;
-            //std::cout << "UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
-        }
+//        if (_chunkerCounter % 100 == 0)
+//        {
+//            std::cout << _chunksProcessed << " chunks processed." << std::endl;
+//            //std::cout << "UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
+//        }
     }
     else
     {

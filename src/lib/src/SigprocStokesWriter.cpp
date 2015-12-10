@@ -47,7 +47,7 @@ SigprocStokesWriter::SigprocStokesWriter(const ConfigNode& configNode ) : Abstra
     }
     else
     {
-        _foff = configNode.getOption("foff", "value", "1.0").toFloat();
+        _foff = configNode.getOption("foff", "value", "-0.390625").toFloat();
     }
     if ( configNode.getOption("tsamp", "value" ) == "" )
     {

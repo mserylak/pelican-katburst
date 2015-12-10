@@ -2,7 +2,6 @@
 #define K7DATAADAPTER_H
 
 #include "pelican/core/AbstractStreamAdapter.h"
-#include "timer.h"
 #include "K7Packet.h"
 
 namespace pelican {
@@ -48,8 +47,9 @@ class K7DataAdapter : public AbstractStreamAdapter
 
         unsigned int _channelsPerPacket;
         unsigned int _channelsPerBlob;
-        unsigned int _startChannel;
         unsigned int _nChannels;
+        unsigned int _channelStart;
+        unsigned int _channelEnd;
         unsigned int _nPolarisations;
         unsigned long int _packetsPerSecond;
         double _samplingTime;

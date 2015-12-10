@@ -14,9 +14,8 @@
 
     <adapters>
       <K7DataAdapter>
-        <packet channels="1024"/>
-        <blob channels="1024"/>
-        <start channel="0"/>
+        <!--blob channelStart="0" channelEnd="1023"/--> <!-- Number of channels per incoming stream. -->
+        <blob channelStart="255" channelEnd="766"/> <!-- Number of channels per incoming stream. -->
       </K7DataAdapter>
     </adapters>
 
@@ -29,19 +28,19 @@
 
     <modules>
 
-      <!--RFI_Clipper active="true" channelRejectionRMS="5.0" spectrumRejectionRMS="6.0">
+      <RFI_Clipper active="true" channelRejectionRMS="5.0" spectrumRejectionRMS="6.0">
         <zeroDMing active="true"/>
-        <BandPassData file="/usr/local/src/pelican-lofar/alfa.bp"/>
+        <BandPassData file="/home/serylak/work/git/pelican-katburst/K7.bp"/>
         <Band matching="true"/>
         <History maximum="10000"/>
-      </RFI_Clipper-->
+      </RFI_Clipper>
 
       <StokesIntegrator>
         <integrateTimeBins value="1"/>
         <integrateFrequencyChannels value="1"/>
       </StokesIntegrator>
 
-      <!--DedispersionModule>
+      <DedispersionModule>
         <timeBinsPerBufferPow2 value="15"/>
         <sampleTime seconds="0.00008192"/>
         <channelBandwidth MHz="-0.390625"/>
@@ -49,47 +48,44 @@
         <dedispersionStepSize value="1.0"/>
         <dedispersionMinimum value="0.0"/>
         <numberOfBuffers value="5"/>
-      </DedispersionModule-->
+      </DedispersionModule>
 
-      <!--DedispersionAnalyser>
+      <DedispersionAnalyser>
         <detectionThreshold in_sigma="10.0"/>
         <power2ForBinning value="6"/>
-      </DedispersionAnalyser-->
+      </DedispersionAnalyser>
 
     </modules>
 
     <output>
 
       <dataStreams>
-        <!--stream name="DedispersionDataAnalysis" listeners="DedispersionDataAnalysisOutput"/>
-        <stream name="SignalFoundSpectrum" listeners="SigprocStokesWriter"/-->
+        <stream name="DedispersionDataAnalysis" listeners="DedispersionDataAnalysisOutput"/>
+        <stream name="SignalFoundSpectrum" listeners="SigprocStokesWriter"/>
         <stream name="SpectrumDataSetStokes" listeners="SigprocStokesWriter"/>
       </dataStreams>
 
       <streamers>
 
-        <!--DedispersionDataAnalysisOutput active="false">
+        <DedispersionDataAnalysisOutput active="true">
           <file name="/usr/local/src/pelican-lofar/K7_dm"/>
-        </DedispersionDataAnalysisOutput-->
+        </DedispersionDataAnalysisOutput>
 
         <SigprocStokesWriter active="true" writeHeader="true">
-          <subbandsPerPacket value="1024"/>
-          <totalComplexSubbands value="512"/>
-          <clock value="400"/>
-          <integrateTimeBins value="32"/>
-          <integrateFrequencyChannels value="1"/>
-          <outputChannelsPerSubband value="1"/>
-          <nRawPolarisations value="2"/>
-          <dataBits value="32"/>
-          <samplesPerPacket value="1"/>
-          <tsamp value="0.00008192"/>
-          <params nPolsToWrite="1"/>
-          <dataBitSize value="16"/>
-          <outputChannelsPerSubband value="1024"/>
-          <udpPacketsPerIteration value="128"/>
-          <foff value="-0.390625"/>
-          <TelescopeID value="64"/>
-          <MachineID value="13"/>
+          <subbandsPerPacket value="512"/> <!-- Number of channels coming from K7Chunker. -->
+          <totalComplexSubbands value="512"/> <!-- Used in channel bandwidth calculation. -->
+          <clock value="400"/> <!-- Used in channel bandwidth calculation. -->
+          <integrateTimeBins value="32"/> <!-- Used in sampling time calculation, equal to accumulationNumber. -->
+          <integrateFrequencyChannels value="1"/> <!-- Used in sampling time calculation, leave set to 1. -->
+          <outputChannelsPerSubband value="1"/> <!-- Used in sampling time and channel bandwidth calculation, leave set to 1. -->
+          <nRawPolarisations value="2"/> <!-- Used in channel bandwidth calculation. -->
+          <dataBits value="32"/> <!-- Number of bits in filterbank file. -->
+          <tsamp value="0.00008192"/> <!-- Sampling time, can be set explicitly instead of calculation. -->
+          <params nPolsToWrite="1"/> <!-- Number of polarisations to write, currently leave set to 1. -->
+          <outputChannelsPerSubband value="1"/> <!-- Channelisation factor for the PFF, leave set to 1. -->
+          <foff value="-0.390625"/> <!-- Channel bandwidth, can be set explicitly instead of calculation. -->
+          <TelescopeID value="64"/> <!-- Telescope identifier. -->
+          <MachineID value="13"/> <!-- Backend identifier. -->
           <file filepath="/home/serylak/work/git/pelican-katburst/K7_fb"/>
         </SigprocStokesWriter>
 

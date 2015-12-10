@@ -6,7 +6,6 @@
 #include <omp.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
-
 #include <QtCore/QString>
 
 namespace pelican {
@@ -15,15 +14,26 @@ namespace ampp {
 // Construct the signal data adapter.
 K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(config)
 {
-    // Read the configuration using configuration node utility methods.
-    _channelsPerPacket = config.getOption("packet", "channels", "1024").toUInt(); // Number of channels in UDP packet arrving at adapter.
-    _channelsPerBlob = config.getOption("blob", "channels", "1024").toUInt(); // Number of channels per UDP packet leaving adapter.
-    _startChannel = config.getOption("start", "channel", "0").toUInt(); // Select from which channel a section of band is used.
+    // Check the configuration type matches the class name.
+    if (config.type() != "K7DataAdapter")
+    {
+        throw _err("K7DataAdapter(): Invalid or missing XML configuration.");
+    }
 
-    // Packet size variables.
-    _packetSize = sizeof(K7Packet);
+    // Channel range for the output blob (counted from 0). It should be identical to/or smaller than ranges passed to K7Chunker.
+    _channelStart = config.getOption("blob", "channelStart", "0").toUInt();
+    _channelEnd = config.getOption("blob", "channelEnd", "1023").toUInt();
+    // Get the total number of channels adapter should take.
+    _nChannels = _channelEnd - _channelStart + 1;
+    std::cout << "_nChannels " << _nChannels << std::endl;
+    if ( (_channelEnd > 1023) || (_channelStart >= _channelEnd) || (_channelStart < 0) || (_channelEnd < 0) )
+    {
+        throw _err("K7DataAdapter(): Invalid channel ranges.");
+    }
+
     _headerSize = sizeof(K7Packet::Header);
-    _payloadSize = sizeof(K7Packet().data);
+    _packetSize = _nChannels * sizeof(uint64_t) + _headerSize;
+    _payloadSize = _packetSize - _headerSize;
     _packetsPerSecond = 390625; // Number of Nyquist-sampled values leaving F-engines per second.
     //std::cout << "_packetSize " << _packetSize << std::endl;
     //std::cout << "_headerSize " << _headerSize << std::endl;
@@ -32,23 +42,8 @@ K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(c
     // Setting timestamp for first iteration of the pipeline.
     _lastTimestamp = 0.0;
 
-    // Get the total number of channels adapter should take.
-    _nChannels = _channelsPerBlob;
-
     // Total intensity will be used only.
     _nPolarisations = 1;
-
-    // Check if _startChannel, _channelsPerPacket and _channelsPerBlob selection is correct.
-    if (_startChannel > _channelsPerPacket - _channelsPerBlob - 1)
-    {
-        throw _err("K7DataAdapter(): Invalid startChannel and/or blob selection.");
-    }
-
-    // If whole spectrum is selected then reset _startChannel to 0.
-    if (1024 == _channelsPerBlob)
-    {
-        _startChannel = 0;
-    }
 
     // Temporary arrays for buffering data from the IO Device.
     _headerBuffer.resize(_headerSize);
@@ -59,9 +54,6 @@ K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(c
 // De-serialise a chunk of data from the input device.
 void K7DataAdapter::deserialise(QIODevice* in)
 {
-    // Used for timing the pipeline.
-    timerStart(&adapterTime);
-
     // Sanity check on data blob dimensions and chunk size.
     // Check that there is something to adapt to.
     if (_chunkSize == 0)
@@ -128,7 +120,7 @@ void K7DataAdapter::deserialise(QIODevice* in)
         {
             // Set the sampling time for precise timestamp calculation.
             _samplingTime = 1.0 * header.accumulationRate / _packetsPerSecond;
-            //std::cout << "_samplingTime " << _samplingTime << std::endl;
+            //std::cout << "_samplingTime " << std::fixed << std::setprecision(8) << _samplingTime << std::endl;
 
             // Get the timestamp from UDP packet header.
             //std::cout << "header.UTCtimestamp " << std::fixed << std::setprecision(10) << header.UTCtimestamp << std::endl;
@@ -176,7 +168,7 @@ void K7DataAdapter::deserialise(QIODevice* in)
         unsigned short int* dd = (unsigned short int*) dataBuffer;
         // Assign data (pointer) to a pointer to the spectrum data for the specified time block, sub-band and polarisation.
         data = (float*) blob->spectrumData(i, 0, 0);
-        for (j = 0; j < _nChannels; j++)
+        for (j = _channelStart; j <= _channelEnd; j++)
         {
             data[j] = (float) (dd[j] + dd[j + 1]);
         }

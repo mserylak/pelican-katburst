@@ -8,10 +8,10 @@
     <chunkers>
       <K7Chunker>
         <connection host="127.0.0.1" port="9999"/>
-        <udpPacketsPerIteration value="128"/>
-        <channelsPerPacket value="1024"/>
-        <!--stream channelStart="255" channelEnd="766"/-->
-        <stream channelStart="0" channelEnd="1023"/>
+        <udpPacketsPerIteration value="128"/> <!-- Number of packets to be put into one chunk of data. -->
+        <channelsPerPacket value="1024"/> <!-- Number of channels per incoming packet. -->
+        <!--stream channelStart="0" channelEnd="1023"/--> <!-- Number of channels per incoming packet. -->
+        <stream channelStart="255" channelEnd="766"/> <!-- Channel range for the output stream (counted from 0). -->
         <data type="SpectrumDataSetStokes"/>
       </K7Chunker>
     </chunkers>

@@ -11,13 +11,13 @@ namespace ampp {
 K7Emulator::K7Emulator(const ConfigNode& configNode) : AbstractUdpEmulator(configNode)
 {
     // Initialise defaults.
-    _samples = configNode.getOption("packet", "samples", "1024").toULong(); // Number of spectral channels per packet.
+    _channels = configNode.getOption("packet", "channels", "1024").toULong(); // Number of spectral channels per packet.
     _interval = configNode.getOption("packet", "interval", "82").toULong(); // Interval in microseconds.
     _accumulationRate = 32;
     _accumulationNumber = 0;
 
     // Set the packet size in bytes (each sample is 8 bytes + 16 for header).
-    _packet.resize(_samples * 8 + 16);
+    _packet.resize(_channels * 8 + 16);
 
     // Set constant parts of packet header data.
     char* ptr = _packet.data();
@@ -89,12 +89,12 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
     *(ptr + 15) = (unsigned char) ((_accumulationRate & 0x00000000FF000000) >> 24);
 
     // Fill the packet payload with data.
-    int8_t XXre = 2;
-    int8_t YYre = 2;
-    int8_t XYre = 2;
-    int8_t XYim = 2;
-    for (unsigned i = 0; i < _samples; ++i)
+    for (unsigned i = 0; i < _channels; ++i)
     {
+        int8_t XXre = int(i/8);
+        int8_t YYre = int(i/8);
+        int8_t XYre = int(i/8);
+        int8_t XYim = int(i/8);
         // Set XXre
         *(ptr + 16 + (i * 8)) = (unsigned char)  (XXre & 0x00000000000000FF);
         *(ptr + 17 + (i * 8)) = (unsigned char) ((XXre & 0x000000000000FF00) >> 8);

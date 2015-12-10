@@ -35,7 +35,7 @@ class K7Emulator : public AbstractUdpEmulator
         uint32_t _accumulationNumber; // (4-Byte) Number of first spectrum since beginning of second denoted by _UTCtimestamp.
         uint32_t _accumulationRate; // (4-Byte) Number of spectra added together in beamformer.
         unsigned long long _totalSamples; // The total number of samples sent.
-        unsigned long _samples; // The number of (frequency) samples in the packet.
+        unsigned long _channels; // The number of (frequency) channels in the packet.
         unsigned long _interval; // The interval between packets in microsec.
         QByteArray _packet; // The data packet.
 };
