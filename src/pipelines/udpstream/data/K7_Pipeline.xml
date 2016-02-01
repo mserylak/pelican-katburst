@@ -14,8 +14,9 @@
 
     <adapters>
       <K7DataAdapter>
-        <!--blob channelStart="0" channelEnd="1023"/--> <!-- Number of channels per incoming stream. -->
-        <blob channelStart="255" channelEnd="766"/> <!-- Number of channels per incoming stream. -->
+        <!--blob channelStart="0" channelEnd="1023"/--> <!-- Full channel range (400 MHz) per incoming stream (counted from 0). -->
+        <!--blob channelStart="255" channelEnd="766"/--> <!-- 512 channels (200 MHz) per incoming stream (counted from 0). -->
+        <blob channelStart="255" channelEnd="766"/> <!-- 128 channels (50 MHz) per incoming stream (counted from 0). -->
       </K7DataAdapter>
     </adapters>
 
