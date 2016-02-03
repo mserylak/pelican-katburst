@@ -30,6 +30,7 @@ class RFI_Clipper : public AbstractModule
         RFI_Clipper( const ConfigNode& config );
         ~RFI_Clipper();
 
+        void getLOFreqFromRedis();
         void run( WeightedSpectrumDataSet* weightedStokes );
         const BandPass& bandPass() const { return _bandPass; }; // return the BandPass Filter in use
 
@@ -38,6 +39,7 @@ class RFI_Clipper : public AbstractModule
         //        std::vector<float> _copyI;
         BandPass  _bandPass;
         bool _active;
+        float _LOFreq;
         float _startFrequency;
         float _endFrequency;
         float _medianFromFile;
@@ -54,6 +56,7 @@ class RFI_Clipper : public AbstractModule
         float _runningRMS; // the running average of the median
         float _integratedNewSum; // the integrated value of the sum of the spectrum
         float _integratedNewSumSq; // the integrated value of the sum of the spectrum
+        std::vector<float> _lastGoodSpectrum;
 };
 
 PELICAN_DECLARE_MODULE(RFI_Clipper)

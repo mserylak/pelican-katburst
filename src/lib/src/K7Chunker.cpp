@@ -41,15 +41,15 @@ K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
 
     // Calculate the size of the packet for the output stream...
     _streamChannels = _channelEnd - _channelStart + 1;
-    std::cout << "_streamChannels " << _streamChannels << std::endl;
+    //std::cout << "K7Chunker::K7Chunker(): _streamChannels " << _streamChannels << std::endl;
     _packetSizeStream = _streamChannels * sizeof(uint64_t) + _headerSize; // Since there is only one sample per packet and no raw polarizations but pseudo-Stokes both values are 1.
-    std::cout << "_packetSizeStream " << _packetSizeStream << std::endl;
+    //std::cout << "K7Chunker::K7Chunker(): _packetSizeStream " << _packetSizeStream << std::endl;
 
     // ...and the output streams.
     _bytesStream = _packetSizeStream - _headerSize;
-    std::cout << "_bytesStream " << _bytesStream << std::endl;
+    //std::cout << "K7Chunker::K7Chunker(): _bytesStream " << _bytesStream << std::endl;
     _byte1OfStream = _channelStart * sizeof(uint64_t);
-    std::cout << "_byte1OfStream " << _byte1OfStream << std::endl;
+    //std::cout << "K7Chunker::K7Chunker(): _byte1OfStream " << _byte1OfStream << std::endl;
 
     // Initialise class variables.
     _startTimestamp = _startAccumulation = 0;
@@ -146,7 +146,7 @@ void K7Chunker::next(QIODevice* device)
             {
                 previousTimestamp = _startTimestamp = _startTimestamp == 0 ? timestamp : _startTimestamp;
                 previousAccumulation = _startAccumulation = _startAccumulation == 0 ? accumulation : _startAccumulation;
-                //std::cout << "UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
+                //std::cout << "K7Chunker::next(): UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
             }
 
             // Sanity check in seqid. If the seconds counter is 0xFFFFFFFFFFFFFFFF,
@@ -180,7 +180,7 @@ void K7Chunker::next(QIODevice* device)
 
             if (lostPackets > 0)
             {
-                printf("Generate %u empty packets, previousTimestamp: %lu, new timestamp: %lu, prevAccumulation: %u, newAccumulation: %u\n",
+                printf("K7Chunker::next(): generate %u empty packets, previousTimestamp: %lu, new timestamp: %lu, prevAccumulation: %u, newAccumulation: %u\n",
                         lostPackets, previousTimestamp, timestamp, previousAccumulation, accumulation);
             }
 

@@ -73,7 +73,7 @@ class DedispersionModule : public AsyncronousModule
         ~DedispersionModule();
 
         /// read LO frequency from the redis database
-//        void getLOFreqFromRedis();
+        //void getLOFreqFromRedis();
 
         /// wait for all asyncronous tasks that have been launched to complete
         void waitForJobCompletion();

@@ -33,10 +33,10 @@ class BinMap
 
         /// set the starting value for the first bin
         void setStart(double);
-
+        /// set the reference value for the polynomial fit
+        void setRef(double);
         /// set the starting value for the last bin
-        void setEnd(double);
-
+        void setBinWidthFromEndFreq(double);
         /// set the width of each bin
         void setBinWidth(double);
 
@@ -46,20 +46,21 @@ class BinMap
         int binIndex(double) const;
         double width() const { return _width; };
         unsigned int numberBins() const { return _nBins; };
-        double startValue() const { return _lower; }
+        double startValue() const { return _start; }
+        double refValue() const { return _ref; }
 
         // the max value representing the non-inclusive
         // range of the bin such that all values<endValue() 
-        double endValue() const { return _lower + _width*_nBins; }
+        double endValue() const { return _start + _width*(_nBins-1); }
 
-        double lastBinValue() const { return _lower +_width*(_nBins-1); }
+        double lastBinValue() const { return _start +_width*(_nBins-1); }
         // the value represented by the left hand edge of the bin
         double binStart(unsigned int index) const;
         // the value represented by the right hand edge of the bin
         double binEnd(unsigned int index) const;
         // return the value associated with the bin with the specified index
         inline double binAssignmentNumber(int index) const {
-            return _lower + ( _width * index );
+            return _start + ( _width * index );
         }
         bool operator<(const BinMap&) const;
 
@@ -71,7 +72,7 @@ class BinMap
         static QMap< unsigned int, QMap< double, QMap<double, unsigned int> > > _unique; // assigns unique id to a BinMap type
         static unsigned int _uniqueCount; // guarantees a unique id
         unsigned int _nBins;
-        double _lower;
+        double _start, _ref;
         double _width;
         double _halfwidth;
         mutable unsigned int _hash;

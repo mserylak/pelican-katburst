@@ -1,6 +1,8 @@
 #include "SpectrumDataSet.h"
 #include "SigprocStokesWriter.h"
 #include "time.h"
+#include <iomanip>
+#include <cmath>
 #include <string>
 #include <cstring>
 #include <iostream>
@@ -32,15 +34,23 @@ SigprocStokesWriter::SigprocStokesWriter(const ConfigNode& configNode ) : Abstra
     }
     _scaleDelta = _cropMax - _cropMin;
 
-    // Initliase connection manager thread
+    // Initialize connection manager thread.
     _filepath = configNode.getOption("file", "filepath");
-    //_topsubband = configNode.getOption("topSubbandIndex", "value", "150").toFloat();
-    //_lbahba = configNode.getOption("LBA_0_or_HBA_1", "value", "1").toFloat();
     float subbandwidth = _clock / (_nRawPols * _nTotalSubbands); // Subband/channel bandwidth in MHz.
+    //std::cout << "SigprocStokesWriter::SigprocStokesWriter(): subbandwidth " << std::fixed << std::setprecision(8) << subbandwidth << std::endl;
     float channelwidth = subbandwidth / _nChannels;
+    //std::cout << "SigprocStokesWriter::SigprocStokesWriter(): channelwidth " << std::fixed << std::setprecision(8) << channelwidth << std::endl;
 
-    _fch1 = 0.0;
-    _fch1 = configNode.getOption("frequencyChannel1", "MHz").toFloat();
+    // For now we will use fixed values but in the future this has to be solved (i.e. query the CAM system on KAT-7).
+    if ( configNode.getOption("frequencyChannel1", "value" ) == "" )
+    {
+        _fch1 = 1822.0 + ((_nSubbands * channelwidth) / 2.0) - channelwidth;
+    }
+    else
+    {
+        _fch1 = configNode.getOption("frequencyChannel1", "value" , "1846.609375").toFloat();
+    }
+    //std::cout << "SigprocStokesWriter::SigprocStokesWriter(): frequencyChannel1 " << std::fixed << std::setprecision(8) << _fch1 << std::endl;
     if ( configNode.getOption("foff", "value" ) == "" )
     {
         _foff = -channelwidth;
@@ -49,19 +59,21 @@ SigprocStokesWriter::SigprocStokesWriter(const ConfigNode& configNode ) : Abstra
     {
         _foff = configNode.getOption("foff", "value", "-0.390625").toFloat();
     }
+    //std::cout << "SigprocStokesWriter::SigprocStokesWriter(): foff " << std::fixed << std::setprecision(8) << _foff << std::endl;
     if ( configNode.getOption("tsamp", "value" ) == "" )
     {
-        _tsamp = (_nRawPols * _nTotalSubbands) * _nChannels * _integrationFreq * _integration / _clock/ 1e6;
+        _tsamp = (_nRawPols * _nTotalSubbands) * _nChannels * _integrationFreq * _integration / _clock / 1e6;
     }
     else
     {
         _tsamp = configNode.getOption("tsamp", "value", "0.00008192").toFloat();
     }
+    //std::cout << "SigprocStokesWriter::SigprocStokesWriter(): tsamp " << std::fixed << std::setprecision(10) << _tsamp << std::endl;
 
     _nPols = configNode.getOption("params", "nPolsToWrite", "1").toUInt();
     _buffSize = configNode.getOption("params", "bufferSize", "5120").toUInt();
     _first = (configNode.hasAttribute("writeHeader") && configNode.getAttribute("writeHeader").toLower() == "true" );
-    _site = configNode.getOption("TelescopeID", "value", "13").toUInt();
+    _site = configNode.getOption("TelescopeID", "value", "64").toUInt();
     _machine = configNode.getOption("MachineID", "value", "13").toUInt();
     _sourceName = "K7Field";
     _cur = 0;
@@ -111,7 +123,7 @@ void SigprocStokesWriter::writeHeader(SpectrumDataSetStokes* stokes)
     WriteDouble("foff", _foff);
     WriteInt("nchans", _nchans);
     WriteDouble("tsamp", _tsamp);
-    WriteInt("nbits", _nBits);        // Only 32-bit binary data output is implemented for now
+    WriteInt("nbits", _nBits);        // Only 32-bit binary data output is implemented for now.
     WriteDouble("tstart", _mjdStamp); // TODO: Extract start time from first packet
     WriteInt("nifs", int(_nPols));    // Polarisation channels.
     WriteString("HEADER_END");
@@ -243,8 +255,7 @@ void SigprocStokesWriter::sendStream(const QString& /*streamName*/, const DataBl
     }
     else
     {
-        std::cerr << "SigprocStokesWriter::send(): "
-                "Only SpectrumDataSetStokes data can be written by the SigprocWriter" << std::endl;
+        std::cerr << "SigprocStokesWriter::send(): Only SpectrumDataSetStokes data can be written by the SigprocWriter" << std::endl;
         return;
     }
 }
@@ -267,8 +278,8 @@ void SigprocStokesWriter::_write(char* data, size_t size)
 void SigprocStokesWriter::_float2int(const float *f, int *i)
 {
     float ftmp;
-    ftmp = (*f>_cropMax)? (_cropMax) : *f;
-    *i = (ftmp<_cropMin) ? 0 : (int)rint((ftmp-_cropMin)*_nRange/_scaleDelta);
+    ftmp = (*f > _cropMax)? (_cropMax) : *f;
+    *i = (ftmp < _cropMin) ? 0 : (int)rint((ftmp - _cropMin) * _nRange / _scaleDelta);
 }
 
 } // namepsace lofar

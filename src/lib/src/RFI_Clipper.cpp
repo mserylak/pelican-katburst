@@ -13,6 +13,7 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
 //#include "openmp.h"
+#include <hiredis/hiredis.h>
 namespace pelican {
 namespace ampp {
 
@@ -72,21 +73,32 @@ RFI_Clipper::RFI_Clipper( const ConfigNode& config )
     if( config.getOption("zeroDMing", "active" ) == "true" ) {
       _zeroDMing = 1;
     }
+    _startFrequency = 0.0;
+    _endFrequency = 0.0;
     if( config.getOption("Band", "matching" ) == "true" ) {
         _startFrequency = _bandPass.startFrequency();
         _endFrequency = _bandPass.endFrequency();
     }
     else {
         if( _active ) {
-            if( config.getOption("Band", "startFrequency" ) == "" ) {
-                throw(QString("RFI_Clipper: <Band startFrequency=?> not defined"));
+            if( config.getOption("Band", "startFrequency" ) != "" ) {
+                _startFrequency = config.getOption("Band","startFrequency" ).toFloat();
             }
-            _startFrequency = config.getOption("Band","startFrequency" ).toFloat();
 
-            QString efreq = config.getOption("Band", "endFrequency" );
-            if( efreq == "" )
-                throw(QString("RFI_Clipper: <Band endFrequency=?> not defined"));
-            _endFrequency= efreq.toFloat();
+            if( config.getOption("Band", "endFrequency") != "" ) {
+                _endFrequency = config.getOption("Band","endFrequency" ).toFloat();
+            }
+
+            if ((0.0 == _startFrequency) || (0.0 == _endFrequency))
+            {
+                // This is ALFABURST pipeline
+                // calculate _startFrequency from LO frequency and number of channels used
+                getLOFreqFromRedis();
+                //TODO: do this properly, based on number of channels, which spectral
+                //quarter, channel bandwidth, etc.
+                _startFrequency = _LOFreq - (448.0 / 4);
+                _endFrequency = _startFrequency - (448.0 / 8) + 0.109375;
+            }
         }
     }
 }
@@ -135,7 +147,7 @@ RFI_Clipper::~RFI_Clipper()
    *
    */
 
-static inline void clipSample( SpectrumDataSetStokes* stokesAll, float* W, unsigned t ) {
+static inline void clipSample( SpectrumDataSetStokes* stokesAll, float* W, unsigned t, std::vector<float> lastGoodSpectrum ) {
 
     float* I = stokesAll->data();
     unsigned nSubbands = stokesAll->nSubbands();
@@ -150,13 +162,35 @@ static inline void clipSample( SpectrumDataSetStokes* stokesAll, float* W, unsig
                 pol, nPolarisations,
                 t, nChannels );
         for (unsigned c = 0; c < nChannels; ++c) {
-            I[index + c] = 0.0;
-            W[index + c] = 0.0;
+            //I[index + c] = 0.0;
+            //W[index + c] = 0.0;
+            I[index + c] = lastGoodSpectrum[c*nSubbands+s];
         }
       }
     }
 }
 
+void RFI_Clipper::getLOFreqFromRedis()
+{
+    redisContext *c = redisConnect("serendip6", 6379);
+    redisReply *reply = (redisReply *) redisCommand(c, "HMGET SCRAM:IF1 IF1SYNHZ");
+    if (REDIS_REPLY_ERROR == reply->type)
+    {
+        std::cerr << "ERROR: Getting LO frequency from redis failed!" << std::endl;
+        freeReplyObject(reply);
+        redisFree(c);
+        return;
+    }
+
+    _LOFreq = atof(reply->element[0]->str);
+    // convert to MHz
+    _LOFreq /= 1e6;
+
+    freeReplyObject(reply);
+    redisFree(c);
+
+    return;
+}
 
 // RFI clipper to be used with Stokes-I out of Stokes Generator
 //void RFI_Clipper::run(SpectrumDataSetStokes* stokesAll)
@@ -177,11 +211,13 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
     unsigned nBins = nChannels * nSubbands;
     unsigned goodSamples = 0;
 
+    _lastGoodSpectrum.resize(nBins);
+
     //float modelRMS = _bandPass.rms();
     // This has all been tested..
     _map.reset( nBins );
     _map.setStart( _startFrequency );
-    _map.setEnd( _endFrequency );
+    _map.setBinWidthFromEndFreq( _endFrequency );
     _bandPass.reBin(_map);
     // -------------------------------------------------------------
     // Processing next chunk 
@@ -259,8 +295,9 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
                                             pol, nPolarisations, t, nChannels );
               spectrumSumAll += I[index+c];
               spectrumSumSqAll += (I[index+c]*I[index+c]);
-              I[index + c] = 0.0;
-              W[index +c] = 0.0;
+              //I[index + c] = 0.0;
+              //W[index +c] = 0.0;
+              I[index + c] = _lastGoodSpectrum[c*nSubbands+s];
             }
           }
           else{
@@ -295,9 +332,10 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
       // This is the RMS of the model subtracted data, in the
       // reference frame of the input
       double spectrumRMS = _bandPass.rms();
-      if (goodChannels != 0)
+      //if (goodChannels != 0)
+      if ((goodChannels / (nChannels * nSubbands)) >= 0.8)
         {
-          double spectrumRMS = sqrt(spectrumSumSq/goodChannels - std::pow(spectrumSum,2));
+          spectrumRMS = sqrt(spectrumSumSq/goodChannels - std::pow(spectrumSum,2));
         }
       //      std::cout << spectrumSumSqAll << " " << spectrumSumAll << " " << nChannels<< std::endl;
       double spectrumRMSAll = sqrt(spectrumSumSqAll/(nChannels*nSubbands) - std::pow(spectrumSumAll/(nChannels*nSubbands),2));
@@ -375,7 +413,7 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
 
         // Clip entire spectrum
         //        std::cout << "Clipping sample" << std::endl;
-        clipSample( stokesAll, W, t );
+        clipSample( stokesAll, W, t, _lastGoodSpectrum );
 /*
         for (unsigned s = 0; s < nSubbands; ++s) {
           long index = stokesAll->index(s, nSubbands,
@@ -409,6 +447,7 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
               // if the channel hasn't been clipped already, remove the spectrum average
               I[index+c] -= (float)_zeroDMing * W[index+c] * spectrumSum;
               I[index+c] /= spectrumRMS;//spectrumRMS;//modelRMS;
+              _lastGoodSpectrum[c*nSubbands+s] = I[index+c];
               //#pragma omp atomic
               newSum += I[index+c];
             }
@@ -445,7 +484,7 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
         if (_num != _maxHistory ) {
           //          _runningMedian = (_runningMedian * (float) _num + median)/(float) (_num+1);
           //          std::cout << _num << std::endl;
-          clipSample( stokesAll, W, t );
+          clipSample( stokesAll, W, t, _lastGoodSpectrum );
           _runningMedian = (_runningMedian * (float) _num + medianDelta)/(float) (_num+1);
           _runningRMS = (_runningRMS * (float) _num + spectrumRMS)/(float) (_num+1);
           // store the integral of _historyNewSum and _historyNewSum^2 from the buffer

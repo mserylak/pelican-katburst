@@ -80,20 +80,20 @@ void BandPassAdapter::deserialise(QIODevice* device)
             throw QString("BandPassAdapter: syntax error on line %1").arg(line);
     }
 
-    if( count < 6 )
+    if( count < 5 )
         throw QString("BandPassAdapter: data format wrong : got %1 parameters, expecting at least 6").arg(count);
 
     unsigned int nChan = (unsigned int)(params[0]);
     float startFreq = params[1];
-    //float endFreq = params[2];
-    float deltaF = params[3];
-    float rms = params[4];
-    float median = params[5];
+    float deltaF = params[2];
+    float rms = params[3];
+    float median = params[4];
     // Remove everything except median and other polynomial coefficients
-    params.remove(0,5);
+    params.remove(0,4);
 
     BinMap map( nChan );
     map.setStart( startFreq );
+    map.setRef ( startFreq );
     map.setBinWidth(deltaF);
     blob->setData( map, params );
     blob->setMedian(median);

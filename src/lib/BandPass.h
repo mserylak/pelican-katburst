@@ -87,7 +87,7 @@ class BandPass : public DataBlob
 
     protected:
 	/// Calculate value of parameterised eqn
-        float _evaluate(float) const; 
+        float _evaluate(float, float) const;
 
         void _zeroChannelsMap(const BinMap& map);
 

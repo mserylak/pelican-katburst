@@ -18,7 +18,7 @@ BinMap::BinMap()
 }
 
 BinMap::BinMap(unsigned int numberOfBins)
-        : _nBins(numberOfBins),_lower(0.0),_width(1.0),_hash(0)
+        : _nBins(numberOfBins),_start(0.0),_width(1.0),_hash(0)
 {
 }
 
@@ -31,16 +31,16 @@ BinMap::~BinMap()
 
 void BinMap::reset(unsigned int numberOfBins)
 {
-     _nBins = numberOfBins; _lower=0.0; _width=1.0, _hash=0;
+     _nBins = numberOfBins; _start=0.0; _width=1.0, _hash=0;
 }
 
 unsigned int BinMap::hash() const
 {
     if (_hash == 0) {
-        if( ! _unique[_nBins][_lower].contains(_width) ) {
-            _unique[_nBins][_lower][_width] = ++_uniqueCount;
+        if( ! _unique[_nBins][_start].contains(_width) ) {
+            _unique[_nBins][_start][_width] = ++_uniqueCount;
         }
-        _hash = _unique[_nBins][_lower][_width];
+        _hash = _unique[_nBins][_start][_width];
     }
     return _hash;
 }
@@ -48,13 +48,19 @@ unsigned int BinMap::hash() const
 // 0 - (_nBins-1) if value is in range
 int BinMap::binIndex(double value) const
 {
-    return (int)(0.5 + ((value - _lower)/ _width ));
+    return (int)(0.5 + ((value - _start)/ _width ));
 }
 
 void BinMap::setStart(double start)
 {
     _hash = 0;
-    _lower = start;
+    _start = start;
+}
+
+void BinMap::setRef(double ref)
+{
+    _hash = 0;
+    _ref = ref;
 }
 
 void BinMap::setBinWidth(double width)
@@ -63,12 +69,10 @@ void BinMap::setBinWidth(double width)
     _width = width;
     _halfwidth = width/2.0;
 }
-
-void BinMap::setEnd(double end)
+void BinMap::setBinWidthFromEndFreq(double end)
 {
-    setBinWidth( ( end - _lower )/_nBins );
+  setBinWidth( ( end - _start )/(_nBins-1) );
 }
-
 double BinMap::binStart(unsigned int index) const
 {
    return binAssignmentNumber(index) - _halfwidth;
@@ -81,23 +85,23 @@ double BinMap::binEnd(unsigned int index) const
 
 //double BinMap::binAssignmentNumber(int index) const
 //{
-//    return _lower + ( _width * index );
+//    return _start + ( _width * index );
 //}
 
 //bool BinMap::equals(const BinMap& map) const
 //{
-//    return (_lower == map._lower) && (_width == map._width);
+//    return (_start == map._start) && (_width == map._width);
 //}
 
 bool operator==(const BinMap& m1, const BinMap& m2)
 {
-    return (m1._lower == m2._lower) && (m1._width == m2._width);
+    return (m1._start == m2._start) && (m1._width == m2._width);
     //return m1.equals(m2);
 }
 
 bool BinMap::operator<(const BinMap& map) const
 {
-     return _lower < map._lower || _nBins < map._nBins || _width < map._width;
+     return _start < map._start || _nBins < map._nBins || _width < map._width;
 }
 
 /**

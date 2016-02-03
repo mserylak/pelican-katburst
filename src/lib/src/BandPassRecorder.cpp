@@ -75,7 +75,7 @@ bool BandPassRecorder::run( SpectrumDataSetStokes* stokesI, BandPass* bp ) {
 
         BinMap map(nBins);
         map.setStart(_startFrequency);
-        map.setEnd(_endFrequency);
+        map.setBinWidthFromEndFreq(_endFrequency);
 
         // if data type changes between calls then reset
         // all accumulative variables.

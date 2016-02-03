@@ -70,6 +70,7 @@ void BandPass::reBin(const BinMap& map)
     _currentMap = map;
     int mapId = map.hash();
     _currentMapId = mapId;
+    _currentMap.setRef ( _primaryMap.refValue() );
     if( ! _dataSets.contains(mapId) ) {
         double scale = map.width()/_primaryMap.width();
         // scale the RMS and median
@@ -88,9 +89,10 @@ void BandPass::reBin(const BinMap& map)
 void BandPass::_buildData(const BinMap& map, float scale, float /*offset*/) {
     int mapId = map.hash();
     _dataSets.insert(mapId, QVector<float>(map.numberBins()) );
+    float referenceFreq = map.refValue();
     for( unsigned int i=0; i < map.numberBins(); ++i ) {
-        _dataSets[mapId][i] = scale * _evaluate(map.binAssignmentNumber(i));
-        //std::cout << map.binAssignmentNumber(i) << ", " <<_evaluate(map.binAssignmentNumber(i)) << std::endl;
+      _dataSets[mapId][i] = scale * _evaluate(map.binAssignmentNumber(i),referenceFreq);
+      //      std::cout << map.binAssignmentNumber(i) << ", " <<_evaluate(map.binAssignmentNumber(i), referenceFreq) << std::endl;
     }
     _zeroChannelsMap(map);
 }
@@ -144,11 +146,11 @@ void BandPass::killBand( float start, float end)
     }
 }
 
-float BandPass::_evaluate(float v) const
+  float BandPass::_evaluate(float v, float v0) const
 {
    float tot = 0.0;
    for(int i=0; i< _params.size(); ++i ) {
-        tot += _params[i]*std::pow(v,i);
+        tot += _params[i]*std::pow(v-v0,i);
    }
    return tot;
 }

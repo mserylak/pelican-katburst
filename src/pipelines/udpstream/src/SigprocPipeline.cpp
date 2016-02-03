@@ -61,12 +61,14 @@ void SigprocPipeline::run(QHash<QString, DataBlob*>& remoteData)
 
     /* to make sure the dedispersion module reads data from a lockable ring
        buffer, copy data to one */
-    SpectrumDataSetStokes* stokesBuf = _stokesBuffer->next();
+        SpectrumDataSetStokes* stokesBuf = _stokesBuffer->next();
     *stokesBuf = *stokes;
 
-    _weightedIntStokes->reset(stokesBuf);
+        _weightedIntStokes->reset(stokesBuf);
+    //_weightedIntStokes->reset(stokes);
     _rfiClipper->run(_weightedIntStokes);
     _dedispersionModule->dedisperse(_weightedIntStokes);
+    dataOutput(stokesBuf, "SpectrumDataSetStokes");
 }
 
 void SigprocPipeline::dedispersionAnalysis( DataBlob* blob ) {
