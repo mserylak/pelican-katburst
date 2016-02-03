@@ -25,9 +25,9 @@ K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(c
     _channelEnd = config.getOption("blob", "channelEnd", "1023").toUInt();
     // Get the total number of channels adapter should take.
     _nChannels = _channelEnd - _channelStart + 1;
-    //std::cout << "K7DataAdapter::K7DataAdapter(): _channelStart " << _channelStart << std::endl;
-    //std::cout << "K7DataAdapter::K7DataAdapter(): _channelEnd " << _channelEnd << std::endl;
-    //std::cout << "K7DataAdapter::K7DataAdapter(): _nChannels " << _nChannels << std::endl;
+    std::cout << "K7DataAdapter::K7DataAdapter(): _channelStart " << _channelStart << std::endl;
+    std::cout << "K7DataAdapter::K7DataAdapter(): _channelEnd " << _channelEnd << std::endl;
+    std::cout << "K7DataAdapter::K7DataAdapter(): _nChannels " << _nChannels << std::endl;
     if ( (_channelEnd > 1023) || (_channelStart >= _channelEnd) || (_channelStart < 0) || (_channelEnd < 0) )
     {
         throw _err("K7DataAdapter(): Invalid channel ranges.");
@@ -37,9 +37,9 @@ K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(c
     _packetSize = _nChannels * sizeof(uint64_t) + _headerSize;
     _payloadSize = _packetSize - _headerSize;
     _packetsPerSecond = 390625; // Number of Nyquist-sampled values leaving F-engines per second.
-    //std::cout << "K7DataAdapter::K7DataAdapter(): _packetSize " << _packetSize << std::endl;
-    //std::cout << "K7DataAdapter::K7DataAdapter(): _headerSize " << _headerSize << std::endl;
-    //std::cout << "K7DataAdapter::K7DataAdapter(): _payloadSize " << _payloadSize << std::endl;
+    std::cout << "K7DataAdapter::K7DataAdapter(): _packetSize " << _packetSize << std::endl;
+    std::cout << "K7DataAdapter::K7DataAdapter(): _headerSize " << _headerSize << std::endl;
+    std::cout << "K7DataAdapter::K7DataAdapter(): _payloadSize " << _payloadSize << std::endl;
 
     // Setting timestamp for first iteration of the pipeline.
     _lastTimestamp = 0.0;

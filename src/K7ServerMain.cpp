@@ -13,6 +13,8 @@ pelican::Config createConfig(int argc, char** argv);
 
 int main(int argc, char ** argv)
 {
+    std::cout << "Starting K7Server..." << std::endl;
+
     // Create a QCoreApplication.
     QCoreApplication app(argc, argv);
 

@@ -9,6 +9,8 @@ using namespace pelican::ampp;
 
 int main(int argc, char* argv[], const QString& stream)
 {
+    std::cout << "Starting K7UdpPipelineMain..." << std::endl;
+
     // Create a QCoreApplication.
     QCoreApplication app(argc, argv);
 
