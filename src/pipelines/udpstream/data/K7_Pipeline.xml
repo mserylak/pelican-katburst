@@ -15,8 +15,10 @@
     <adapters>
       <K7DataAdapter>
         <!--blob channelStart="0" channelEnd="1023"/--> <!-- Full channel range (400 MHz) per incoming stream (counted from 0). -->
-        <!--blob channelStart="255" channelEnd="766"/--> <!-- 512 channels (200 MHz) per incoming stream (counted from 0). -->
-        <blob channelStart="255" channelEnd="766"/> <!-- 128 channels (50 MHz) per incoming stream (counted from 0). -->
+        <!--blob channelStart="256" channelEnd="767"/--> <!-- 512 channels (200 MHz) per incoming stream (counted from 0). Centered at 1821.8046875 MHz. -->
+        <!--blob channelStart="384" channelEnd="639"/--> <!-- 256 channels (100 MHz) per incoming stream (counted from 0). Centered at 1821.8046875 MHz. -->
+        <blob channelStart="448" channelEnd="575"/> <!-- 128 channels (50 MHz) per incoming stream (counted from 0). Centered at 1821.8046875 MHz. -->
+        <!--blob channelStart="480" channelEnd="543"/--> <!-- 64 channels (25 MHz) per incoming stream (counted from 0). Centered at 1821.8046875 MHz. -->
       </K7DataAdapter>
     </adapters>
 
@@ -31,7 +33,7 @@
 
       <RFI_Clipper active="true" channelRejectionRMS="5.0" spectrumRejectionRMS="6.0">
         <zeroDMing active="true"/>
-        <BandPassData file="/home/serylak/work/git/pelican-katburst/K7.bp"/>
+        <BandPassData file="/home/serylak/work/git/pelican-katburst/src/pipelines/udpstream/data/kat7_128ch.bp"/>
         <Band matching="true"/>
         <History maximum="10000"/>
       </RFI_Clipper>
@@ -69,11 +71,11 @@
       <streamers>
 
         <DedispersionDataAnalysisOutput active="true">
-          <file name="/usr/local/src/pelican-lofar/K7_dm"/>
+          <file name="/home/serylak/work/git/pelican-katburst/K7_dm"/>
         </DedispersionDataAnalysisOutput>
 
         <SigprocStokesWriter active="true" writeHeader="true">
-          <subbandsPerPacket value="512"/> <!-- Number of channels coming from K7Chunker. -->
+          <subbandsPerPacket value="128"/> <!-- Number of channels coming from K7Chunker. -->
           <totalComplexSubbands value="512"/> <!-- Used in channel bandwidth calculation. -->
           <clock value="400"/> <!-- Used in channel bandwidth calculation. -->
           <integrateTimeBins value="32"/> <!-- Used in sampling time calculation, equal to accumulationNumber. -->
