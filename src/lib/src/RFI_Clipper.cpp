@@ -13,7 +13,7 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
 //#include "openmp.h"
-#include <hiredis/hiredis.h>
+//#include <hiredis/hiredis.h>
 namespace pelican {
 namespace ampp {
 
@@ -93,7 +93,7 @@ RFI_Clipper::RFI_Clipper( const ConfigNode& config )
             {
                 // This is ALFABURST pipeline
                 // calculate _startFrequency from LO frequency and number of channels used
-                getLOFreqFromRedis();
+                //getLOFreqFromRedis();
                 //TODO: do this properly, based on number of channels, which spectral
                 //quarter, channel bandwidth, etc.
                 _startFrequency = _LOFreq - (448.0 / 4);
@@ -169,7 +169,7 @@ static inline void clipSample( SpectrumDataSetStokes* stokesAll, float* W, unsig
       }
     }
 }
-
+#if 0
 void RFI_Clipper::getLOFreqFromRedis()
 {
     redisContext *c = redisConnect("serendip6", 6379);
@@ -191,7 +191,7 @@ void RFI_Clipper::getLOFreqFromRedis()
 
     return;
 }
-
+# endif
 // RFI clipper to be used with Stokes-I out of Stokes Generator
 //void RFI_Clipper::run(SpectrumDataSetStokes* stokesAll)
 void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
