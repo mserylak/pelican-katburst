@@ -32,7 +32,7 @@
 
       <RFI_Clipper active="false" channelRejectionRMS="5.0" spectrumRejectionRMS="6.0">
         <zeroDMing active="false"/>
-        <BandPassData file="/home/serylak/work/git/pelican-katburst/src/pipelines/udpstream/data/kat7_128ch.bp"/>
+        <BandPassData file="/home/serylak/work/git/pelican-katburst/src/pipelines/udpstream/data/kat7_1024ch.bp"/>
         <Band matching="false"/>
         <History maximum="10000"/>
       </RFI_Clipper>
@@ -53,7 +53,7 @@
       <streamers>
 
         <SigprocStokesWriter active="true" writeHeader="true">
-          <subbandsPerPacket value="256"/> <!-- Number of channels coming from K7Chunker. -->
+          <subbandsPerPacket value="1024"/> <!-- Number of channels coming from K7Chunker. -->
           <totalComplexSubbands value="512"/> <!-- Used in channel bandwidth calculation. -->
           <clock value="400"/> <!-- Used in channel bandwidth calculation. -->
           <integrateTimeBins value="32"/> <!-- Used in sampling time calculation, equal to accumulationNumber. -->
