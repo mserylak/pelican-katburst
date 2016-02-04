@@ -92,10 +92,10 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
     // Fill the packet payload with data.
     for (unsigned i = 0; i < _channels; ++i)
     {
-        int8_t XXre = int(i/4);
-        int8_t YYre = int(i/4);
-        int8_t XYre = int(i/4);
-        int8_t XYim = int(i/4);
+        int8_t XXre = int(i/8);
+        int8_t YYre = int(i/8);
+        int8_t XYre = int(i/8);
+        int8_t XYim = int(i/8);
         // Set XXre
         *(ptr + 16 + (i * 8)) = (unsigned char)  (XXre & 0x00000000000000FF);
         *(ptr + 17 + (i * 8)) = (unsigned char) ((XXre & 0x000000000000FF00) >> 8);

@@ -20,18 +20,9 @@ K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(c
         throw _err("K7DataAdapter(): Invalid or missing XML configuration.");
     }
 
-    // Channel range for the output blob (counted from 0). It should be identical to/or smaller than ranges passed to K7Chunker.
-    _channelStart = config.getOption("blob", "channelStart", "0").toUInt();
-    _channelEnd = config.getOption("blob", "channelEnd", "1023").toUInt();
     // Get the total number of channels adapter should take.
-    _nChannels = _channelEnd - _channelStart + 1;
-    std::cout << "K7DataAdapter::K7DataAdapter(): _channelStart " << _channelStart << std::endl;
-    std::cout << "K7DataAdapter::K7DataAdapter(): _channelEnd " << _channelEnd << std::endl;
+    _nChannels = config.getOption("channelsPerBlob", "value", "1024").toUInt();
     std::cout << "K7DataAdapter::K7DataAdapter(): _nChannels " << _nChannels << std::endl;
-    if ( (_channelEnd > 1023) || (_channelStart >= _channelEnd) || (_channelStart < 0) || (_channelEnd < 0) )
-    {
-        throw _err("K7DataAdapter(): Invalid channel ranges.");
-    }
 
     _headerSize = sizeof(K7Packet::Header);
     _packetSize = _nChannels * sizeof(uint64_t) + _headerSize;
@@ -170,9 +161,10 @@ void K7DataAdapter::deserialise(QIODevice* in)
         unsigned short int* dd = (unsigned short int*) dataBuffer;
         // Assign data (pointer) to a pointer to the spectrum data for the specified time block, sub-band and polarisation.
         data = (float*) blob->spectrumData(i, 0, 0);
-        for (j = _channelStart; j <= _channelEnd; j++)
+//        for (j = _channelStart; j <= _channelEnd; j++)
+        for (j = 0; j <= _nChannels; j++)
         {
-            data[j] = (float) (dd[j] + dd[j + 1]);
+            data[j] = (float) (dd[j * 4] + dd[(j * 4) + 1]);
         }
 
     }

@@ -38,6 +38,8 @@ K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
     {
         throw _err("K7Chunker(): Invalid channel ranges.");
     }
+    std::cout << "K7Chunker::K7Chunker(): _channelStart " << _channelStart << std::endl;
+    std::cout << "K7Chunker::K7Chunker(): _channelEnd " << _channelEnd << std::endl;
 
     // Calculate the size of the packet for the output stream...
     _streamChannels = _channelEnd - _channelStart + 1;
