@@ -162,9 +162,9 @@ static inline void clipSample( SpectrumDataSetStokes* stokesAll, float* W, unsig
                 pol, nPolarisations,
                 t, nChannels );
         for (unsigned c = 0; c < nChannels; ++c) {
-            //I[index + c] = 0.0;
-            //W[index + c] = 0.0;
-            I[index + c] = lastGoodSpectrum[c*nSubbands+s];
+            I[index + c] = 0.0;
+            W[index + c] = 0.0;
+            //I[index + c] = lastGoodSpectrum[c*nSubbands+s];
         }
       }
     }
@@ -293,11 +293,11 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
             for(unsigned int pol = 0; pol < nPolarisations; ++pol ) {
               long index = stokesAll->index(s, nSubbands,
                                             pol, nPolarisations, t, nChannels );
+              //I[index + c] = _lastGoodSpectrum[c*nSubbands+s];
               spectrumSumAll += I[index+c];
               spectrumSumSqAll += (I[index+c]*I[index+c]);
-              //I[index + c] = 0.0;
-              //W[index +c] = 0.0;
-              I[index + c] = _lastGoodSpectrum[c*nSubbands+s];
+              I[index + c] = 0.0;
+              W[index +c] = 0.0;
             }
           }
           else{
@@ -328,6 +328,7 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
       
       if (goodChannels != 0)
       spectrumSum /= goodChannels;
+      //spectrumSum = spectrumSumAll/(nChannels*nSubbands);
       
       // This is the RMS of the model subtracted data, in the
       // reference frame of the input
@@ -339,6 +340,7 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
         }
       //      std::cout << spectrumSumSqAll << " " << spectrumSumAll << " " << nChannels<< std::endl;
       double spectrumRMSAll = sqrt(spectrumSumSqAll/(nChannels*nSubbands) - std::pow(spectrumSumAll/(nChannels*nSubbands),2));
+      //spectrumRMS = spectrumRMSAll;
       
       
 
@@ -378,7 +380,7 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
       float medianDelta = median + _bandPass.median();
 
 
-      if (fabs(median) > spectrumRMStolerance || goodChannels < 0.5*nChannels) {
+      if (fabs(median) > spectrumRMStolerance || goodChannels < 0.5*nChannels*nSubbands) {
       //      if (fabs(spectrumSum) > spectrumRMStolerance) {
         /*if (_badSpectra == 0) {
           std::cout 
@@ -505,6 +507,21 @@ void RFI_Clipper::run( WeightedSpectrumDataSet* weightedStokes )
         _bandPass.setMedian(_runningMedian);
         _bandPass.setRMS(_runningRMS);
       }
+
+
+      for (unsigned s = 0; s < nSubbands; ++s) {
+        for(unsigned int pol = 0; pol < nPolarisations; ++pol ) {
+          long index = stokesAll->index(s, nSubbands,
+                                      pol, nPolarisations, t, nChannels );
+          for (unsigned c = 0; c < nChannels; ++c) {
+            if (0 == W[index+c]) {
+                I[index+c] = _lastGoodSpectrum[c*nSubbands+s];
+                W[index+c] = 1.0;
+            }
+          }
+        }
+      }
+
     }
     
     // Now the chunk has finished. All that remains is to pass on the stats of the chunk
