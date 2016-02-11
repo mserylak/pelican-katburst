@@ -152,19 +152,20 @@ void K7DataAdapter::deserialise(QIODevice* in)
             if (bytesRead == _payloadSize) break;
         }
 
-#if 0
+
         // Read the packet payload from the input device.
-        in->read(dataBuffer, _payloadSize);
-#endif
+        //in->read(dataBuffer, _payloadSize);
+
 
         // Write out spectrum to blob.
         unsigned short int* dd = (unsigned short int*) dataBuffer;
         // Assign data (pointer) to a pointer to the spectrum data for the specified time block, sub-band and polarisation.
         data = (float*) blob->spectrumData(i, 0, 0);
-//        for (j = _channelStart; j <= _channelEnd; j++)
         for (j = 0; j <= _nChannels; j++)
         {
-            data[j] = (float) (dd[j * 4] + dd[(j * 4) + 1]);
+//            data[j] = (float) (dd[j * 4] + dd[(j * 4) + 1]); // XX* + YY*
+            data[j] = (float) (dd[j * 4]); // XX*
+//            data[j] = (float) (dd[(j * 4) + 1]); // YY*
         }
 
     }

@@ -126,8 +126,10 @@ void K7Chunker::next(QIODevice* device)
                 return;
 
             // Wait for datagram to be available.
-            while (!socket->hasPendingDatagrams())
+            while ( !socket->hasPendingDatagrams() )
+            {
                 socket->waitForReadyRead(100);
+            }
 
             // Read the current UDP packet from the socket.
             if (socket->readDatagram(reinterpret_cast<char*>(&currentPacket), _packetSize) <= 0)
@@ -211,7 +213,7 @@ void K7Chunker::next(QIODevice* device)
         }
         _chunksProcessed++;
         _chunkerCounter++;
-        if (_chunkerCounter % 100 == 0)
+        if (_chunkerCounter % 5 == 0)
         {
             std::cout << "K7Chunker::next(): " << _chunksProcessed << " chunks processed." << std::endl;
             //std::cout << "UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
