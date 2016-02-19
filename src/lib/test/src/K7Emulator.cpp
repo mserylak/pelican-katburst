@@ -3,6 +3,8 @@
 #include <sys/time.h>
 #include <cmath>
 #include <iostream>
+#include <random>
+#include <chrono>
 
 namespace pelican {
 namespace ampp {
@@ -26,6 +28,17 @@ K7Emulator::K7Emulator(const ConfigNode& configNode) : AbstractUdpEmulator(confi
     struct timeval tv;
     gettimeofday(&tv, NULL);
     _UTCtimestamp = tv.tv_sec;
+
+    // Random number generator (white noise generation)
+
+unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+std::cout << "# Seed " << seed << std::endl;
+
+std::default_random_engine _generator (seed);
+std::normal_distribution<double> distribution(0.0,5.0);
+
+//    std::default_random_engine _generator;
+//    std::normal_distribution<double> distribution(128.0,32.0);
 
     // _UTCtimestamp has to be changed into bits and put into first 0->7 bytes of packet.
     *(ptr)     = (unsigned char)  (_UTCtimestamp & 0x00000000000000FF);

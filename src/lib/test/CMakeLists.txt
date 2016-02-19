@@ -89,6 +89,7 @@ endif(CUDA_FOUND)
 
 # ==== Create the KATBURST binary which sends simulated data.
 add_executable(K7Emulator src/K7EmulatorMain.cpp)
+set_source_files_properties(src/K7Emulator.cpp PROPERTIES COMPILE_FLAGS -std=c++11)
 target_link_libraries(K7Emulator
     ${PELICAN_LIBRARY}
     pelican-lofar_static
