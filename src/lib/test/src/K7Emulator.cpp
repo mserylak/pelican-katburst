@@ -1,10 +1,10 @@
 #include "K7Emulator.h"
 #include "pelican/utility/ConfigNode.h"
 #include <sys/time.h>
-#include <cmath>
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <iostream>
-#include <random>
-#include <chrono>
 
 namespace pelican {
 namespace ampp {
@@ -15,6 +15,9 @@ K7Emulator::K7Emulator(const ConfigNode& configNode) : AbstractUdpEmulator(confi
     // Initialise defaults.
     _channels = configNode.getOption("packet", "channels", "1024").toULong(); // Number of spectral channels per packet.
     _interval = configNode.getOption("packet", "interval", "82").toULong(); // Interval in microseconds.
+    _toneChannel = configNode.getOption("channel", "number", "0").toULong(); // Put a impulse at a specified channel.
+    _amplitudeChannel = configNode.getOption("channel", "amplitude", "0").toULong(); // Give a strength at a specified channel.
+
     _accumulationRate = 32;
     _accumulationNumber = 0;
 
@@ -29,16 +32,8 @@ K7Emulator::K7Emulator(const ConfigNode& configNode) : AbstractUdpEmulator(confi
     gettimeofday(&tv, NULL);
     _UTCtimestamp = tv.tv_sec;
 
-    // Random number generator (white noise generation)
-
-unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-std::cout << "# Seed " << seed << std::endl;
-
-std::default_random_engine _generator (seed);
-std::normal_distribution<double> distribution(0.0,5.0);
-
-//    std::default_random_engine _generator;
-//    std::normal_distribution<double> distribution(128.0,32.0);
+    // Pseudo-random number generator (white noise generation).
+    srand(time(NULL)); // Initialise seed.
 
     // _UTCtimestamp has to be changed into bits and put into first 0->7 bytes of packet.
     *(ptr)     = (unsigned char)  (_UTCtimestamp & 0x00000000000000FF);
@@ -73,6 +68,10 @@ std::normal_distribution<double> distribution(0.0,5.0);
 void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
 {
     // Initialise defaults.
+    int8_t XXre;
+    int8_t YYre;
+    int8_t XYre;
+    int8_t XYim;
     uint32_t packetsPerSecond = 390625; // Maximal number of packets per second.
 
     // Set pointer to the output data.
@@ -102,13 +101,26 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
     *(ptr + 14) = (unsigned char) ((_accumulationRate & 0x0000000000FF0000) >> 16);
     *(ptr + 15) = (unsigned char) ((_accumulationRate & 0x00000000FF000000) >> 24);
 
+
     // Fill the packet payload with data.
     for (unsigned i = 0; i < _channels; ++i)
     {
-        int8_t XXre = int(i/8);
-        int8_t YYre = int(i/8);
-        int8_t XYre = int(i/8);
-        int8_t XYim = int(i/8);
+        if ( i == _toneChannel )
+        {
+            XXre = _amplitudeChannel;
+            YYre = _amplitudeChannel;
+            XYre = _amplitudeChannel;
+            XYim = _amplitudeChannel;
+        } else {
+            XXre = int(20 + 3 * random_normal());
+            YYre = int(20 + 3 * random_normal());
+            XYre = int(20 + 3 * random_normal());
+            XYim = int(20 + 3 * random_normal());
+//            XXre = int(i/8);
+//            YYre = int(i/8);
+//            XYre = int(i/8);
+//            XYim = int(i/8);
+        }
         // Set XXre
         *(ptr + 16 + (i * 8)) = (unsigned char)  (XXre & 0x00000000000000FF);
         *(ptr + 17 + (i * 8)) = (unsigned char) ((XXre & 0x000000000000FF00) >> 8);
@@ -129,6 +141,18 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
         _UTCtimestamp += 1;
     }
     //std::cout << _UTCtimestamp << " " << _accumulationNumber << " " << _accumulationRate << std::endl;
+}
+
+// Generates uniform distribution, (0..1].
+double K7Emulator::drand()
+{
+  return (rand()+1.0)/(RAND_MAX+1.0);
+}
+
+// Generates normal distribution, with mean of 0 and standard deviation 1.
+double K7Emulator::random_normal()
+{
+  return sqrt(-2*log(drand())) * cos(2*M_PI*drand());
 }
 
 } // namespace ampp

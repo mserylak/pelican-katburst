@@ -15,6 +15,7 @@ int main(int argc, char* argv[])
     {
         ConfigNode emulatorConfig("<K7Emulator>"
                                   "<packet samples=\"1024\" interval=\"82\"/>"
+                                  "<channel number=\"496\" amplitude=\"127\"/>"
                                   "<connection host=\"127.0.0.1\" port=\"9999\"/>"
                                   "</K7Emulator>");
         EmulatorDriver emulator(new K7Emulator(emulatorConfig));

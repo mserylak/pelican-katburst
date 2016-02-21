@@ -41,7 +41,6 @@ K7DataAdapter::K7DataAdapter(const ConfigNode& config) : AbstractStreamAdapter(c
     // Temporary arrays for buffering data from the IO Device.
     _headerBuffer.resize(_headerSize);
     _dataBuffer.resize(_payloadSize);
-
 }
 
 // De-serialise a chunk of data from the input device.
@@ -152,10 +151,8 @@ void K7DataAdapter::deserialise(QIODevice* in)
             if (bytesRead == _payloadSize) break;
         }
 
-
         // Read the packet payload from the input device.
         //in->read(dataBuffer, _payloadSize);
-
 
         // Write out spectrum to blob.
         unsigned short int* dd = (unsigned short int*) dataBuffer;
@@ -163,11 +160,10 @@ void K7DataAdapter::deserialise(QIODevice* in)
         data = (float*) blob->spectrumData(i, 0, 0);
         for (j = 0; j <= _nChannels; j++)
         {
-//            data[j] = (float) (dd[j * 4] + dd[(j * 4) + 1]); // XX* + YY*
-            data[j] = (float) (dd[j * 4]); // XX*
+            data[j] = (float) (dd[j * 4] + dd[(j * 4) + 1]); // XX* + YY*
+//            data[j] = (float) (dd[j * 4]); // XX*
 //            data[j] = (float) (dd[(j * 4) + 1]); // YY*
         }
-
     }
 }
 
