@@ -38,6 +38,7 @@ class K7Emulator : public AbstractUdpEmulator
         uint64_t _UTCtimestamp; // (8-Byte) UTC timestamp in Unix time (seconds from 00:00:00 UTC, Thursday, 1 January 1970).
         uint32_t _accumulationNumber; // (4-Byte) Number of first spectrum since beginning of second denoted by _UTCtimestamp.
         uint32_t _accumulationRate; // (4-Byte) Number of spectra added together in beamformer.
+	unsigned int _header; // Size of KATBURST UDP packet header.
         unsigned long long _totalSamples; // The total number of samples sent.
         unsigned long _channels; // The number of (frequency) channels in the packet.
         unsigned long _interval; // The interval between packets in microseconds.

@@ -75,14 +75,14 @@ K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
 // the constructor of the abstract chunker.
 QIODevice* K7Chunker::newDevice()
 {
-    QUdpSocket* socket = new QUdpSocket;
+    QUdpSocket* udpSocket = new QUdpSocket;
 
-    if (!socket->bind(port(), QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint ))
+    if (!udpSocket->bind(port(), QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint ))
     {
-        std::cerr << "K7Chunker::newDevice(): Unable to bind to UDP port!" << socket->errorString().toStdString() << std::endl;
+        std::cerr << "K7Chunker::newDevice(): Unable to bind to UDP port!" << udpSocket->errorString().toStdString() << std::endl;
     }
 
-    return socket;
+    return udpSocket;
 }
 
 // Gets the next chunk of data from the UDP socket (if it exists).
@@ -99,7 +99,7 @@ void K7Chunker::next(QIODevice* device)
     unsigned long int timestamp;
     unsigned int accumulation;
     unsigned int rate;
-    QUdpSocket* socket = static_cast<QUdpSocket*>(device);
+    QUdpSocket* udpSocket = static_cast<QUdpSocket*>(device);
     K7Packet currentPacket;
     K7Packet outputPacket;
     K7Packet _emptyPacket;
@@ -126,13 +126,13 @@ void K7Chunker::next(QIODevice* device)
                 return;
 
             // Wait for datagram to be available.
-            while ( !socket->hasPendingDatagrams() )
+            while ( !udpSocket->hasPendingDatagrams() )
             {
-                socket->waitForReadyRead(100);
+                udpSocket->waitForReadyRead(100);
             }
 
             // Read the current UDP packet from the socket.
-            if (socket->readDatagram(reinterpret_cast<char*>(&currentPacket), _packetSize) <= 0)
+            if (udpSocket->readDatagram(reinterpret_cast<char*>(&currentPacket), _packetSize) <= 0)
             {
                 std::cerr << "K7Chunker::next(): Error while receiving UDP Packet!" << std::endl;
                 i--;
@@ -223,7 +223,7 @@ void K7Chunker::next(QIODevice* device)
     {
         // Must discard the datagram if there is no available space.
         if (!isActive()) return;
-        socket->readDatagram(0, 0);
+        udpSocket->readDatagram(0, 0);
         std::cout << "K7Chunker::next(): Writable data not valid, discarding packets." << std::endl;
     }
 

@@ -13,16 +13,16 @@ namespace ampp {
 K7Emulator::K7Emulator(const ConfigNode& configNode) : AbstractUdpEmulator(configNode)
 {
     // Initialise defaults.
+    _header = 16; // Header size of KATBURST UDP packet.
     _channels = configNode.getOption("packet", "channels", "1024").toULong(); // Number of spectral channels per packet.
     _interval = configNode.getOption("packet", "interval", "82").toULong(); // Interval in microseconds.
     _toneChannel = configNode.getOption("channel", "number", "0").toULong(); // Put a impulse at a specified channel.
     _amplitudeChannel = configNode.getOption("channel", "amplitude", "0").toULong(); // Give a strength at a specified channel.
-
-    _accumulationRate = 32;
-    _accumulationNumber = 0;
+    _accumulationRate = configNode.getOption("accumulation", "rate", "32").toULong(); // Give accumulation rate.
+    _accumulationNumber = configNode.getOption("accumulation", "number", "0").toULong(); // Give accumulation number at start.
 
     // Set the packet size in bytes (each sample is 8 bytes + 16 for header).
-    _packet.resize(_channels * 8 + 16);
+    _packet.resize(_channels * 8 + _header);
 
     // Set constant parts of packet header data.
     char* ptr = _packet.data();
@@ -116,10 +116,6 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
             YYre = int(20 + 3 * random_normal());
             XYre = int(20 + 3 * random_normal());
             XYim = int(20 + 3 * random_normal());
-//            XXre = int(i/8);
-//            YYre = int(i/8);
-//            XYre = int(i/8);
-//            XYim = int(i/8);
         }
         // Set XXre
         *(ptr + 16 + (i * 8)) = (unsigned char)  (XXre & 0x00000000000000FF);
