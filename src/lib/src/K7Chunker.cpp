@@ -14,9 +14,7 @@ namespace pelican {
 namespace ampp {
 
 // Construct the chunker.
-K7Chunker::K7Chunker(const ConfigNode& config)
-    : AbstractChunker(config)
-    , _packetCount(0)
+K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config), _packetCount(0)
 {
     // Check the configuration type matches the class name.
     if (config.type() != "K7Chunker")
@@ -27,8 +25,10 @@ K7Chunker::K7Chunker(const ConfigNode& config)
     // Packet dimensions.
     _packetSize = sizeof(K7Packet);
     _headerSize = sizeof(K7Packet::Header);
-    _nPackets = config.getOption("udpPacketsPerIteration", "value", "128").toUInt(); // Number of UDP packets collected into one chunk (iteration of the pipeline).
-    _packetsPerSecond = 390625; // Number of Nyquist-sampled values leaving F-engines per second.
+    // Number of packets per chunk (pipeline iteration).
+    _nPackets = config.getOption("udpPacketsPerIteration", "value", "128").toUInt();
+    // Number of Nyquist-sampled values leaving F-engines per second.
+    _packetsPerSecond = 390625;
 
     // Total number of channels per incoming packet.
     _nChannels = config.getOption("channelsPerPacket", "value", "1024").toUInt();
@@ -46,7 +46,9 @@ K7Chunker::K7Chunker(const ConfigNode& config)
     // Calculate the size of the packet for the output stream...
     _streamChannels = _channelEnd - _channelStart + 1;
     std::cout << "K7Chunker::K7Chunker(): _streamChannels " << _streamChannels << std::endl;
-    _packetSizeStream = _streamChannels * sizeof(uint64_t) + _headerSize; // Since there is only one sample per packet and no raw polarizations but pseudo-Stokes both values are 1.
+
+    // Since there is only one sample per packet and no raw polarizations but pseudo-Stokes both values are 1.
+    _packetSizeStream = _streamChannels * sizeof(uint64_t) + _headerSize;
     std::cout << "K7Chunker::K7Chunker(): _packetSizeStream " << _packetSizeStream << std::endl;
 
     // ...and the output streams.
@@ -69,7 +71,6 @@ K7Chunker::K7Chunker(const ConfigNode& config)
     // Set the chunk processed counter.
     _chunksProcessed = 0;
     _chunkerCounter = 0;
-
 }
 
 // Constructs a new QIODevice (in this case a QUdpSocket) and returns it
@@ -93,7 +94,7 @@ void K7Chunker::next(QIODevice* device)
     unsigned int i;
     unsigned int lostPackets, difference;
     unsigned int offsetStream;
-    unsigned int packetCounter;
+    unsigned int lostPacketCounter;
     unsigned int previousAccumulation;
     unsigned int _startAccumulation;
     unsigned long int previousTimestamp;
@@ -118,12 +119,15 @@ void K7Chunker::next(QIODevice* device)
 
     // Get writable buffer space for the chunk.
     WritableData writableData;
-    if(_packetCount == 0) {
+    if(_packetCount == 0)
+    {
         writableData = getDataStorage(_nPackets * _packetSizeStream, chunkTypes().at(0));
     }
-    else {
+    else
+    {
         writableData = _writable;
     }
+
     if (writableData.isValid())
     {
         // Loop over the number of UDP packets to put in a chunk.
@@ -137,7 +141,7 @@ void K7Chunker::next(QIODevice* device)
             while ( !udpSocket->hasPendingDatagrams() )
             {
                 _writable = writableData;
-                return;
+                continue;
             }
 
             // Read the current UDP packet from the socket.
@@ -194,8 +198,8 @@ void K7Chunker::next(QIODevice* device)
             }
 
             // Generate lostPackets (empty packets) if needed.
-            packetCounter = 0;
-            for (packetCounter = 0; packetCounter < lostPackets && _packetCount + packetCounter < _nPackets; ++packetCounter)
+            lostPacketCounter = 0;
+            for (lostPacketCounter = 0; lostPacketCounter < lostPackets && _packetCount + lostPacketCounter < _nPackets; ++lostPacketCounter)
             {
                 // Generate empty packet with correct timestamp and accumulation number
                 previousTimestamp = (previousAccumulation < _packetsPerSecond) ? previousTimestamp : previousTimestamp + 1;
@@ -203,7 +207,7 @@ void K7Chunker::next(QIODevice* device)
                 updateEmptyPacket(_emptyPacket, previousTimestamp, previousAccumulation, rate);
                 offsetStream = writePacket(&writableData, _emptyPacket, _packetSizeStream, offsetStream);
             }
-            _packetCount += packetCounter;
+            _packetCount += lostPacketCounter;
 
             // Write received packet to stream after updating header and data.
             if (_packetCount != _nPackets)
