@@ -48,6 +48,8 @@ class K7Chunker : public AbstractChunker
         }
 
     private:
+        unsigned int _packetCount;
+        WritableData _writable;
         unsigned int _nPackets;
         unsigned int _packetsRejected;
         unsigned int _packetsAccepted;
