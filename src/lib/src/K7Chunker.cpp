@@ -14,8 +14,9 @@ namespace pelican {
 namespace ampp {
 
 // Construct the chunker.
-K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
-    : _packetCount(0)
+K7Chunker::K7Chunker(const ConfigNode& config)
+    : AbstractChunker(config)
+    , _packetCount(0)
 {
     // Check the configuration type matches the class name.
     if (config.type() != "K7Chunker")
