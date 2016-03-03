@@ -264,4 +264,3 @@ int K7Chunker::writePacket(WritableData *writer, K7Packet& packet, unsigned int 
 
 } // namespace ampp
 } // namespace pelican
-

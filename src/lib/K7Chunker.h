@@ -76,4 +76,3 @@ PELICAN_DECLARE_CHUNKER(K7Chunker)
 } // namespace ampp
 } // namespace pelican
 #endif // K7CHUNKER_H_
-

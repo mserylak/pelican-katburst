@@ -2,7 +2,6 @@
 #include "pelican/comms/PelicanProtocol.h"
 #include "pelican/utility/Config.h"
 #include "K7Chunker.h"
-
 #include <QtCore/QCoreApplication>
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -50,7 +49,10 @@ int main(int argc, char ** argv)
 pelican::Config createConfig(int argc, char** argv)
 {
     // Check that argc and argv are nonzero
-    if (argc == 0 || argv == NULL) throw QString("No command line.");
+    if (argc == 0 || argv == NULL)
+    {
+        throw QString("No command line.");
+    }
 
     // Declare the supported options.
     boost::program_options::options_description desc("Allowed options");
@@ -82,8 +84,9 @@ pelican::Config createConfig(int argc, char** argv)
 
     pelican::Config config;
     if (!configFilename.empty())
+    {
         config = pelican::Config(QString(configFilename.c_str()));
+    }
 
     return config;
 }
-

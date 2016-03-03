@@ -153,4 +153,3 @@ double K7Emulator::random_normal()
 
 } // namespace ampp
 } // namespace pelican
-
