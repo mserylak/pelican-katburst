@@ -14,6 +14,8 @@ K7Emulator::K7Emulator(const ConfigNode& configNode) : AbstractUdpEmulator(confi
 {
     // Initialise defaults.
     _header = 16; // Header size of KATBURST UDP packet.
+    _host = configNode.getOption("connection", "host", "127.0.0.1");
+    _port = configNode.getOption("connection", "port", "9999").toULong();
     _channels = configNode.getOption("packet", "channels", "1024").toULong(); // Number of spectral channels per packet.
     _interval = configNode.getOption("packet", "interval", "82").toULong(); // Interval in microseconds.
     _toneChannel = configNode.getOption("channel", "number", "0").toULong(); // Put a impulse at a specified channel.
