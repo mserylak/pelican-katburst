@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pelican>
+
+<configuration version="1.0">
+
+  <emulators>
+    <K7Emulator>
+      <connection host="127.0.0.1" port="9999"/>
+      <packet channels="1024" interval="656"/>
+      <channel number="511" amplitude="127"/>
+      <accumulation rate="256" number="0"/>
+    </K7Emulator>
+  </emulators>
+
+</configuration>
