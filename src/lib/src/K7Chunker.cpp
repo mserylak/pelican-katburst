@@ -14,7 +14,7 @@ namespace pelican {
 namespace ampp {
 
 // Construct the chunker.
-K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config), _packetCount(0)
+K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
 {
     // Check the configuration type matches the class name.
     if (config.type() != "K7Chunker")
@@ -119,7 +119,7 @@ void K7Chunker::next(QIODevice* device)
 
     // Get writable buffer space for the chunk.
     WritableData writableData;
-    if(_packetCount == 0)
+    if ( ! _writable.isValid() )
     {
         writableData = getDataStorage(_nPackets * _packetSizeStream, chunkTypes().at(0));
     }
@@ -131,7 +131,7 @@ void K7Chunker::next(QIODevice* device)
     if (writableData.isValid())
     {
         // Loop over the number of UDP packets to put in a chunk.
-        while (_packetCount < _nPackets)
+        for (i = 0; i < _nPackets; ++i)
         {
             // Chunker sanity check.
             if (!isActive())
@@ -148,6 +148,7 @@ void K7Chunker::next(QIODevice* device)
             if (udpSocket->readDatagram(reinterpret_cast<char*>(&currentPacket), _packetSize) <= 0)
             {
                 std::cerr << "K7Chunker::next(): Error while receiving UDP Packet!" << std::endl;
+                i--;
                 continue;
             }
 
@@ -157,7 +158,7 @@ void K7Chunker::next(QIODevice* device)
             rate         = currentPacket.header.accumulationRate;
 
             // First time next() has been run, initialise _startTimestamp and _startAccumulation.
-            if (_packetCount == 0 && _startTimestamp == 0)
+            if (i == 0 && _startTimestamp == 0)
             {
                 previousTimestamp = _startTimestamp = _startTimestamp == 0 ? timestamp : _startTimestamp;
                 previousAccumulation = _startAccumulation = _startAccumulation == 0 ? accumulation : _startAccumulation;
@@ -169,6 +170,7 @@ void K7Chunker::next(QIODevice* device)
             if (timestamp == ~0UL || previousTimestamp + 10 < timestamp)
             {
                 _packetsRejected++;
+                i--;
                 continue;
             }
 
@@ -182,6 +184,7 @@ void K7Chunker::next(QIODevice* device)
             if (difference < rate)
             {
                 ++_packetsRejected;
+                i -= 1;
                 continue;
             }
             // Missing packets
@@ -199,7 +202,7 @@ void K7Chunker::next(QIODevice* device)
 
             // Generate lostPackets (empty packets) if needed.
             lostPacketCounter = 0;
-            for (lostPacketCounter = 0; lostPacketCounter < lostPackets && _packetCount + lostPacketCounter < _nPackets; ++lostPacketCounter)
+            for (lostPacketCounter = 0; lostPacketCounter < lostPackets && i + lostPacketCounter < _nPackets; ++lostPacketCounter)
             {
                 // Generate empty packet with correct timestamp and accumulation number
                 previousTimestamp = (previousAccumulation < _packetsPerSecond) ? previousTimestamp : previousTimestamp + 1;
@@ -207,10 +210,10 @@ void K7Chunker::next(QIODevice* device)
                 updateEmptyPacket(_emptyPacket, previousTimestamp, previousAccumulation, rate);
                 offsetStream = writePacket(&writableData, _emptyPacket, _packetSizeStream, offsetStream);
             }
-            _packetCount += lostPacketCounter;
+            i += lostPacketCounter;
 
             // Write received packet to stream after updating header and data.
-            if (_packetCount != _nPackets)
+            if (i != _nPackets)
             {
                 ++_packetsAccepted;
                 // Generate Stream packet
@@ -220,16 +223,14 @@ void K7Chunker::next(QIODevice* device)
                 previousTimestamp = timestamp;
                 previousAccumulation = accumulation;
             }
-            ++_packetCount;
         }
-        _packetCount = 0;
         _chunksProcessed++;
         _chunkerCounter++;
-        _writable = WritableData(); // clear any data locks
+        // Clear any data locks.
+        _writable = WritableData();
         if (_chunkerCounter % 5 == 0)
         {
-            std::cout << "K7Chunker::next(): " << _chunksProcessed << " chunks processed." << std::endl;
-            //std::cout << "UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
+            std::cout << "K7Chunker::next(): " << _chunksProcessed << " chunks processed. " << "UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
         }
     }
     else

@@ -50,7 +50,7 @@ void K7UdpPipeline::run(QHash<QString, DataBlob*>& remoteData)
     dataOutput(_intStokes, "SpectrumDataSetStokes");
     _rfiClipper->run(_weightedIntStokes);
 
-    if (_iteration % 100 == 0)
+    if (_iteration % 5 == 0)
     {
         std::cout << "Finished the beamforming pipeline, iteration " << _iteration << " out of " << _totalIterations << std::endl;
     }
