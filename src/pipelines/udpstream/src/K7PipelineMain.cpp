@@ -31,4 +31,3 @@ int main(int argc, char* argv[], const QString& stream)
 
     return 0;
 }
-

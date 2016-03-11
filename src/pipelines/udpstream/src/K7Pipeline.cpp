@@ -74,7 +74,7 @@ void K7Pipeline::run(QHash<QString, DataBlob*>& remoteData)
     dataOutput(_intStokes, "SpectrumDataSetStokes");
     _rfiClipper->run(_weightedIntStokes);
     _dedispersionModule->dedisperse(_weightedIntStokes);
-    if (0 == _counter % 100)
+    if (0 == _counter % 5)
     {
         std::cout << _counter << " chunks processed." << std::endl;
     }
@@ -127,4 +127,3 @@ void K7Pipeline::updateBufferLock( const QList<DataBlob*>& freeData )
         _stokesBuffer->unlock( static_cast<SpectrumDataSetStokes*>(blob) );
     }
 }
-
