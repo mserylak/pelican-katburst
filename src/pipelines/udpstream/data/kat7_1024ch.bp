@@ -1,6 +1,6 @@
 # Bandpass file for KAT-7 (1024 channels, 400 MHZ, subbands  0-1023, f_cent = 1821.8046875 MHz)
 1024
-1622.0
+1622.000000
 2021.609375
 0.390625
 0.00001

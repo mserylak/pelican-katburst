@@ -109,11 +109,23 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
     {
         if ( i == _toneChannel )
         {
-            XXre = _amplitudeChannel;
-            YYre = _amplitudeChannel;
-            XYre = _amplitudeChannel;
-            XYim = _amplitudeChannel;
-        } else {
+            if ( _toneChannel == 0 )
+            {
+                XXre = int(20 + 3 * random_normal());
+                YYre = int(20 + 3 * random_normal());
+                XYre = int(20 + 3 * random_normal());
+                XYim = int(20 + 3 * random_normal());
+            }
+            else
+            {
+                XXre = _amplitudeChannel;
+                YYre = _amplitudeChannel;
+                XYre = _amplitudeChannel;
+                XYim = _amplitudeChannel;
+            }
+        }
+        else
+        {
             XXre = int(20 + 3 * random_normal());
             YYre = int(20 + 3 * random_normal());
             XYre = int(20 + 3 * random_normal());
