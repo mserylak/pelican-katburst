@@ -17,7 +17,6 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/math/distributions/chi_squared.hpp>
 #include <boost/random/variate_generator.hpp>
-//#include <hiredis/hiredis.h>
 
 extern "C" void cacheDedisperseLoop( float *outbuff, long outbufSize, float *buff, float mstartdm,
                                      float mdmstep, int tdms, const int numSamples,
@@ -61,17 +60,7 @@ DedispersionModule::DedispersionModule( const ConfigNode& config )
 
     _fch1 = 0.0;
     _fch1 = config.getOption("frequencyChannel1", "MHz").toFloat();
-#if 0
-    if (0.0 == _fch1)
-    {
-        // This is ALFABURST pipeline
-        // calculate _fch1 from LO frequency and number of channels used
-        getLOFreqFromRedis();
-        //TODO: do this properly, based on number of channels, which spectral
-        //quarter, etc.
-        _fch1 = _LOFreq - (448.0 / 4);
-    }
-#endif
+
     unsigned int maxBuffers = config.getOption("numberOfBuffers", "value", "2").toUInt();
     if( maxBuffers < 1 ) throw(QString("DedispersionModule: Must have at least one buffer"));
 

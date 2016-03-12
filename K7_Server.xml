@@ -7,14 +7,15 @@
 
     <chunkers>
       <K7Chunker>
-        <connection host="192.168.202.13" port="8622"/>
+        <connection host="127.0.0.1" port="9999"/>
+        <!--connection host="192.168.202.13" port="8622"/-->
         <channelsPerPacket value="1024"/> <!-- Number of channels per packet received by K7Chunker. -->
         <udpPacketsPerIteration value="128"/> <!-- Number of packets to be put into one chunk of data. -->
-        <stream channelStart="0" channelEnd="1023"/> <!-- Full channel range (400 MHz) for the output stream (counted from 0). -->
+        <!--stream channelStart="0" channelEnd="1023"/--> <!-- Full channel range (400 MHz) for the output stream (counted from 0). -->
         <!--stream channelStart="256" channelEnd="767"/--> <!-- 512 channels (200 MHz) for the output stream (counted from 0). Centered at 1821.8046875 MHz. -->
         <!--stream channelStart="384" channelEnd="639"/--> <!-- 256 channels (100 MHz) for the output stream (counted from 0). Centered at 1821.8046875 MHz. -->
         <!--stream channelStart="448" channelEnd="575"/--> <!-- 128 channels (50 MHz) for the output stream (counted from 0). Centered at 1821.8046875 MHz. -->
-        <!--stream channelStart="480" channelEnd="543"/--> <!-- 64 channels (25 MHz) for the output stream (counted from 0). Centered at 1821.8046875 MHz. -->
+        <stream channelStart="480" channelEnd="543"/> <!-- 64 channels (25 MHz) for the output stream (counted from 0). Centered at 1821.8046875 MHz. -->
         <data type="SpectrumDataSetStokes"/>
       </K7Chunker>
     </chunkers>

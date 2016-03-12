@@ -30,7 +30,6 @@ class RFI_Clipper : public AbstractModule
         RFI_Clipper( const ConfigNode& config );
         ~RFI_Clipper();
 
-        void getLOFreqFromRedis();
         void run( WeightedSpectrumDataSet* weightedStokes );
         const BandPass& bandPass() const { return _bandPass; }; // return the BandPass Filter in use
 
@@ -39,7 +38,6 @@ class RFI_Clipper : public AbstractModule
         //        std::vector<float> _copyI;
         BandPass  _bandPass;
         bool _active;
-        float _LOFreq;
         float _startFrequency;
         float _endFrequency;
         float _medianFromFile;
