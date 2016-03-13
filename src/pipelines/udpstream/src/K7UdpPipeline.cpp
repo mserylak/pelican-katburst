@@ -67,4 +67,3 @@ void K7UdpPipeline::run(QHash<QString, DataBlob*>& remoteData)
 
 } // namespace ampp
 } // namespace pelican
-

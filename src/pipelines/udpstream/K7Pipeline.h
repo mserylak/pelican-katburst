@@ -59,4 +59,3 @@ class K7Pipeline : public AbstractPipeline
 } // namespace pelican
 
 #endif // K7PIPELINE_H
-

@@ -12,8 +12,8 @@
 #include <sched.h>
 #include <stdio.h>
 
-using namespace pelican;
-using namespace ampp;
+namespace pelican {
+namespace ampp {
 
 // The constructor. It is good practice to initialise any pointer members to zero.
 K7Pipeline::K7Pipeline(const QString& streamIdentifier) : AbstractPipeline(), _streamIdentifier(streamIdentifier)
@@ -133,3 +133,6 @@ void K7Pipeline::updateBufferLock( const QList<DataBlob*>& freeData )
         _stokesBuffer->unlock( static_cast<SpectrumDataSetStokes*>(blob) );
     }
 }
+
+} // namespace ampp
+} // namespace pelican
