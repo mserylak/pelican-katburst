@@ -1,0 +1,8 @@
+# Bandpass file for KAT-7 (32 channels, 12.5 MHZ, subbands  496-527, f_cent = 1821.8046875 MHz)
+32
+1815.750000
+1827.859375
+0.390625
+0.00001
+0.0
+0.0
