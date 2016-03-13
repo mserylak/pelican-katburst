@@ -19,6 +19,7 @@ using namespace ampp;
 K7Pipeline::K7Pipeline(const QString& streamIdentifier) : AbstractPipeline(), _streamIdentifier(streamIdentifier)
 {
     _rfiClipper = 0;
+    _stokesIntegrator = 0;
     _dedispersionModule = 0;
     _dedispersionAnalyser = 0;
     _counter = 0;
@@ -27,9 +28,14 @@ K7Pipeline::K7Pipeline(const QString& streamIdentifier) : AbstractPipeline(), _s
 // The destructor must clean up and created modules and any local dataBlob's created.
 K7Pipeline::~K7Pipeline()
 {
-    delete _dedispersionAnalyser;
-    delete _dedispersionModule;
     delete _rfiClipper;
+    delete _stokesIntegrator;
+    delete _dedispersionModule;
+    delete _dedispersionAnalyser;
+    foreach ( SpectrumDataSetStokes* d, _stokesData )
+    {
+        delete d;
+    }
 }
 
 // Initialises the pipeline, creating required modules and data blobs, and requesting remote data.
