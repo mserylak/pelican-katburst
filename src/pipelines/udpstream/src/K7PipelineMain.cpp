@@ -11,7 +11,8 @@ int main(int argc, char* argv[], const QString& stream)
 {
     // Create a QCoreApplication.
     QCoreApplication app(argc, argv);
-    try {
+    try
+    {
         // Create a PipelineApplication.
         PipelineApplication pApp(argc, argv);
 
@@ -25,7 +26,8 @@ int main(int argc, char* argv[], const QString& stream)
         pApp.start();
     }
     // Catch any error messages from Pelican.
-    catch (const QString& err) {
+    catch (const QString& err)
+    {
         std::cerr << "K7PipelineMain: " << err.toStdString() << std::endl;
     }
 

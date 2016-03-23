@@ -48,20 +48,20 @@ void K7Pipeline::init()
     _minEventsFound = c.getOption("events", "min", "5").toUInt();
     _maxEventsFound = c.getOption("events", "max", "5").toUInt();
 
+    // Request remote data.
+    requestRemoteData("SpectrumDataSetStokes");
+
     // Create the pipeline modules and any local data blobs.
-    _rfiClipper = (RFI_Clipper *) createModule("RFI_Clipper");
+    _stokesData = createBlobs<SpectrumDataSetStokes>("SpectrumDataSetStokes", history);
+    _stokesBuffer = new LockingPtrContainer<SpectrumDataSetStokes>(&_stokesData);
+    _intStokes = (SpectrumDataSetStokes *) createBlob("SpectrumDataSetStokes");
     _stokesIntegrator = (StokesIntegrator *) createModule("StokesIntegrator");
+    _weightedIntStokes = (WeightedSpectrumDataSet*) createBlob("WeightedSpectrumDataSet");
+    _rfiClipper = (RFI_Clipper *) createModule("RFI_Clipper");
     _dedispersionModule = (DedispersionModule*) createModule("DedispersionModule");
     _dedispersionAnalyser = (DedispersionAnalyser*) createModule("DedispersionAnalyser");
     _dedispersionModule->connect( boost::bind( &K7Pipeline::dedispersionAnalysis, this, _1 ) );
     _dedispersionModule->unlockCallback( boost::bind( &K7Pipeline::updateBufferLock, this, _1 ) );
-    _stokesData = createBlobs<SpectrumDataSetStokes>("SpectrumDataSetStokes", history);
-    _stokesBuffer = new LockingPtrContainer<SpectrumDataSetStokes>(&_stokesData);
-    _intStokes = (SpectrumDataSetStokes *) createBlob("SpectrumDataSetStokes");
-    _weightedIntStokes = (WeightedSpectrumDataSet*) createBlob("WeightedSpectrumDataSet");
-
-    // Request remote data.
-    requestRemoteData("SpectrumDataSetStokes");
 }
 
 // Defines a single iteration of the pipeline.
@@ -69,7 +69,10 @@ void K7Pipeline::run(QHash<QString, DataBlob*>& remoteData)
 {
     // Get pointers to the remote data blob(s) from the supplied hash.
     SpectrumDataSetStokes* stokes = (SpectrumDataSetStokes*) remoteData["SpectrumDataSetStokes"];
-    if( !stokes ) throw(QString("No stokes!"));
+    if ( !stokes )
+    {
+        throw (QString("No stokes!"));
+    }
     // To make sure the dedispersion module reads data from a lockable ring buffer, copy data to one.
     SpectrumDataSetStokes* stokesBuf = _stokesBuffer->next();
 
@@ -80,14 +83,14 @@ void K7Pipeline::run(QHash<QString, DataBlob*>& remoteData)
     dataOutput(_intStokes, "SpectrumDataSetStokes");
     _rfiClipper->run(_weightedIntStokes);
     _dedispersionModule->dedisperse(_weightedIntStokes);
-    if (0 == _counter % 5)
+    if (0 == _counter % 100)
     {
         std::cout << _counter << " chunks processed." << std::endl;
     }
     _counter++;
 }
 
-void K7Pipeline::dedispersionAnalysis( DataBlob* blob )
+void K7Pipeline::dedispersionAnalysis(DataBlob* blob)
 {
     DedispersionDataAnalysis result;
     DedispersionSpectra* data = static_cast<DedispersionSpectra*>(blob);
@@ -102,7 +105,7 @@ void K7Pipeline::dedispersionAnalysis( DataBlob* blob )
             if (result.eventsFound() >= _minEventsFound)
             {
                 dataOutput( &result, "DedispersionDataAnalysis" );
-                foreach( const SpectrumDataSetStokes* d, result.data()->inputDataBlobs())
+                foreach ( const SpectrumDataSetStokes* d, result.data()->inputDataBlobs() )
                 {
                     dataOutput( d, "SignalFoundSpectrum" );
                 }
@@ -114,7 +117,7 @@ void K7Pipeline::dedispersionAnalysis( DataBlob* blob )
             {
                 std::cout << "Writing out..." << std::endl;
                 dataOutput( &result, "DedispersionDataAnalysis" );
-                foreach( const SpectrumDataSetStokes* d, result.data()->inputDataBlobs())
+                foreach ( const SpectrumDataSetStokes* d, result.data()->inputDataBlobs() )
                 {
                     dataOutput( d, "SignalFoundSpectrum" );
                 }
@@ -123,7 +126,7 @@ void K7Pipeline::dedispersionAnalysis( DataBlob* blob )
     }
 }
 
-void K7Pipeline::updateBufferLock( const QList<DataBlob*>& freeData )
+void K7Pipeline::updateBufferLock(const QList<DataBlob*>& freeData)
 {
     // Find WeightedDataBlobs that can be unlocked.
     foreach( DataBlob* blob, freeData )
