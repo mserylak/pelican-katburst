@@ -78,6 +78,8 @@ RFI_Clipper::RFI_Clipper( const ConfigNode& config )
     if( config.getOption("Band", "matching" ) == "true" ) {
         _startFrequency = _bandPass.startFrequency();
         _endFrequency = _bandPass.endFrequency();
+        std::cout << "RFI_Clipper::RFI_Clipper(): _startFrequency " << _startFrequency << std::endl;
+        std::cout << "RFI_Clipper::RFI_Clipper(): _endFrequency " << _endFrequency << std::endl;
     }
 }
 
