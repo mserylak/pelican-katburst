@@ -71,11 +71,7 @@ void K7Pipeline::run(QHash<QString, DataBlob*>& remoteData)
     SpectrumDataSetStokes* stokes = (SpectrumDataSetStokes*) remoteData["SpectrumDataSetStokes"];
     if ( !stokes )
     {
-<<<<<<< HEAD
         throw (QString("K7Pipeline::run(): No stokes!"));
-=======
-        throw (QString("No stokes!"));
->>>>>>> 7f89699240cb012e08a1348c4d4fbd170b8f96c1
     }
     // To make sure the dedispersion module reads data from a lockable ring buffer, copy data to one.
     SpectrumDataSetStokes* stokesBuf = _stokesBuffer->next();
@@ -87,11 +83,7 @@ void K7Pipeline::run(QHash<QString, DataBlob*>& remoteData)
     dataOutput(_intStokes, "SpectrumDataSetStokes");
     _rfiClipper->run(_weightedIntStokes);
     _dedispersionModule->dedisperse(_weightedIntStokes);
-<<<<<<< HEAD
     if (0 == _iteration % 5)
-=======
-    if (0 == _counter % 100)
->>>>>>> 7f89699240cb012e08a1348c4d4fbd170b8f96c1
     {
         std::cout << "K7Pipeline::run(): Finished the dedispersion pipeline, iteration " << _iteration << std::endl;
     }

@@ -26,7 +26,7 @@ class K7UdpPipeline : public AbstractPipeline
 
     private:
         int _totalIterations;
-        unsigned int _iteration;
+        unsigned long int _iteration;
         QString _streamIdentifier;
 
         // Module pointers.
