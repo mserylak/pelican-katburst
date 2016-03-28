@@ -14,11 +14,12 @@
 
     <adapters>
       <K7DataAdapter>
-        <!--channelsPerBlob value="1024"/--> <!-- Full channel range (400 MHz) in the incoming stream. -->
+        <channelsPerBlob value="1024"/> <!-- Full channel range (400 MHz) in the incoming stream. -->
         <!--channelsPerBlob value="512"/--> <!-- 512 channels (200 MHz) in the incoming stream. -->
         <!--channelsPerBlob value="256"/--> <!-- 256 channels (100 MHz) in the incoming stream. -->
         <!--channelsPerBlob value="128"/--> <!-- 128 channels (50 MHz) in the incoming stream. -->
-        <channelsPerBlob value="64"/> <!-- 64 channels (25 MHz) in the incoming stream. -->
+        <!--channelsPerBlob value="64"/--> <!-- 64 channels (25 MHz) in the incoming stream. -->
+        <!--channelsPerBlob value="32"/--> <!-- 32 channels (12.5 MHz) in the incoming stream. -->
       </K7DataAdapter>
     </adapters>
 
@@ -33,7 +34,7 @@
       <RFI_Clipper active="false" channelRejectionRMS="5.0" spectrumRejectionRMS="6.0">
         <zeroDMing active="false"/>
         <BandPassData file="/home/serylak/work/git/pelican-katburst/kat7_1024ch.bp"/>
-        <Band matching="false"/>
+        <Band matching="flase"/>
         <History maximum="10000"/>
       </RFI_Clipper>
 
@@ -53,15 +54,15 @@
       <streamers>
 
         <SigprocStokesWriter active="true" writeHeader="true">
-          <subbandsPerPacket value="64"/> <!-- Number of channels coming from K7Chunker. Change according to K7_Server.xml. -->
+          <subbandsPerPacket value="1024"/> <!-- Number of channels coming from K7Chunker. Change according to K7_Server.xml. -->
           <totalComplexSubbands value="512"/> <!-- Used in channel bandwidth calculation, leave set to 512. -->
           <clock value="400"/> <!-- Used in channel bandwidth calculation, leave set to 400. -->
-          <integrateTimeBins value="32"/> <!-- Used in sampling time calculation, equal to accumulationNumber. -->
+          <integrateTimeBins value="256"/> <!-- Used in sampling time calculation, equal to accumulationNumber. -->
           <integrateFrequencyChannels value="1"/> <!-- Used in sampling time calculation, leave set to 1. -->
           <outputChannelsPerSubband value="1"/> <!-- Used in sampling time and channel bandwidth calculation, leave set to 1. -->
           <nRawPolarisations value="2"/> <!-- Used in channel bandwidth calculation, leave set to 2. -->
           <dataBits value="32"/> <!-- Number of bits in filterbank file, leave set to 32. -->
-          <tsamp value="0.00008192"/> <!-- Sampling time, can be set explicitly instead of calculation. -->
+          <tsamp value="0.00065536"/> <!-- Sampling time, can be set explicitly instead of calculation. -->
           <params nPolsToWrite="1"/> <!-- Number of polarisations to write, currently leave set to 1. -->
           <outputChannelsPerSubband value="1"/> <!-- Channelisation factor for the PFF, leave set to 1. -->
           <foff value="-0.390625"/> <!-- Channel bandwidth, can be set explicitly instead of calculation, leave set to -0.390625 -->
