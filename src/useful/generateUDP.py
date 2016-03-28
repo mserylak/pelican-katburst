@@ -5,10 +5,10 @@ import socket
 import time
 import numpy as np
 
-#HOST = "192.168.202.13"
-#PORT = 8622
-HOST = '127.0.0.1'
-PORT = 9999
+HOST = "192.168.202.13"
+PORT = 8622
+#HOST = "127.0.0.1"
+#PORT = 9999
 
 samplingTime = 2.56e-6
 packetsPerSecond = 390625

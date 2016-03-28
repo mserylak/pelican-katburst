@@ -1,4 +1,4 @@
-# Bandpass file for KAT-7 (64 channels, 25 MHZ, subbands  480-543, f_cent = 1821.8046875 MHz)
+# Bandpass file for KAT-7 (64 channels, 25 MHZ, subbands  480-543, f_low = 1809.500000, f_cent = 1821.8046875, f_high = 1834.109375)
 64
 1809.500000
 1834.109375
