@@ -52,7 +52,7 @@ void K7UdpPipeline::run(QHash<QString, DataBlob*>& remoteData)
 
     if (_iteration % 5 == 0)
     {
-        std::cout << "Finished the beamforming pipeline, iteration " << _iteration << " out of " << _totalIterations << std::endl;
+        std::cout << "K7UdpPipeline::run(): Finished the beamforming pipeline, iteration " << _iteration << " out of " << _totalIterations << std::endl;
     }
     _iteration++;
 

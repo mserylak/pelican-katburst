@@ -50,7 +50,7 @@ class K7Pipeline : public AbstractPipeline
         SpectrumDataSetStokes *_intStokes;
 
         unsigned long int _counter;
-        unsigned int _iteration;
+        unsigned long int _iteration;
         unsigned int _minEventsFound;
         unsigned int _maxEventsFound;
 };

@@ -44,4 +44,3 @@ class K7UdpPipeline : public AbstractPipeline
 } // namespace pelican
 
 #endif // K7UDPPIPELINE_H
-

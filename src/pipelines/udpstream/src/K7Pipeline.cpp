@@ -22,7 +22,7 @@ K7Pipeline::K7Pipeline(const QString& streamIdentifier) : AbstractPipeline(), _s
     _stokesIntegrator = 0;
     _dedispersionModule = 0;
     _dedispersionAnalyser = 0;
-    _counter = 0;
+    _iteration = 0;
 }
 
 // The destructor must clean up and created modules and any local dataBlob's created.
@@ -69,7 +69,10 @@ void K7Pipeline::run(QHash<QString, DataBlob*>& remoteData)
 {
     // Get pointers to the remote data blob(s) from the supplied hash.
     SpectrumDataSetStokes* stokes = (SpectrumDataSetStokes*) remoteData["SpectrumDataSetStokes"];
-    if( !stokes ) throw(QString("No stokes!"));
+    if ( !stokes )
+    {
+        throw (QString("K7Pipeline::run(): No stokes!"));
+    }
     // To make sure the dedispersion module reads data from a lockable ring buffer, copy data to one.
     SpectrumDataSetStokes* stokesBuf = _stokesBuffer->next();
 
@@ -80,11 +83,11 @@ void K7Pipeline::run(QHash<QString, DataBlob*>& remoteData)
     dataOutput(_intStokes, "SpectrumDataSetStokes");
     _rfiClipper->run(_weightedIntStokes);
     _dedispersionModule->dedisperse(_weightedIntStokes);
-    if (0 == _counter % 5)
+    if (0 == _iteration % 5)
     {
-        std::cout << _counter << " chunks processed." << std::endl;
+        std::cout << "K7Pipeline::run(): Finished the dedispersion pipeline, iteration " << _iteration << std::endl;
     }
-    _counter++;
+    _iteration++;
 }
 
 void K7Pipeline::dedispersionAnalysis( DataBlob* blob )
@@ -93,12 +96,12 @@ void K7Pipeline::dedispersionAnalysis( DataBlob* blob )
     DedispersionSpectra* data = static_cast<DedispersionSpectra*>(blob);
     if ( _dedispersionAnalyser->analyse(data, &result) )
     {
-        std::cout << "Found " << result.eventsFound() << " events" << std::endl;
-        std::cout << "Limits: " << _minEventsFound << " " << _maxEventsFound << " events" << std::endl;
+        std::cout << "K7Pipeline::dedispersionAnalysis(): Found " << result.eventsFound() << " events" << std::endl;
+        std::cout << "K7Pipeline::dedispersionAnalysis(): Limits: " << _minEventsFound << " " << _maxEventsFound << " events" << std::endl;
         dataOutput( &result, "TriggerInput" );
         if (_minEventsFound >= _maxEventsFound)
         {
-            std::cout << "Writing out..." << std::endl;
+            std::cout << "K7Pipeline::dedispersionAnalysis(): Writing out..." << std::endl;
             if (result.eventsFound() >= _minEventsFound)
             {
                 dataOutput( &result, "DedispersionDataAnalysis" );
@@ -112,7 +115,7 @@ void K7Pipeline::dedispersionAnalysis( DataBlob* blob )
         {
             if (result.eventsFound() >= _minEventsFound && result.eventsFound() <= _maxEventsFound)
             {
-                std::cout << "Writing out..." << std::endl;
+                std::cout << "K7Pipeline::dedispersionAnalysis(): Writing out..." << std::endl;
                 dataOutput( &result, "DedispersionDataAnalysis" );
                 foreach( const SpectrumDataSetStokes* d, result.data()->inputDataBlobs())
                 {
