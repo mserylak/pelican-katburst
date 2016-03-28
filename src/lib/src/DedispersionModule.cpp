@@ -18,54 +18,56 @@
 #include <boost/math/distributions/chi_squared.hpp>
 #include <boost/random/variate_generator.hpp>
 
-extern "C" void cacheDedisperseLoop( float *outbuff, long outbufSize, float *buff, float mstartdm,
-                                     float mdmstep, int tdms, const int numSamples,
-                                     const float* dmShift, const int i_maxshift,
-                                     const int i_nchans );
-
+extern "C" void cacheDedisperseLoop ( float *outbuff, long outbufSize, float *buff, float mstartdm,
+                                      float mdmstep, int tdms, const int numSamples,
+                                      const float* dmShift, const int i_maxshift,
+                                      const int i_nchans );
 
 namespace pelican {
-
 namespace ampp {
 
-/**
- *@details DedispersionModule 
- * Example configuration:
+/*
+ * @details DedispersionModule
  * <DedispersionModule>
- *    <sampleNumber value="512">
- *       The total number of time samples to dedisperse at once
- *    </sampleNumber>
- *    <frequencyChannel1 MHz="150.0">
- *       The frequency of the first channel (lowest or highest 
- *       depending on channelBandwidth +ve or -ve)
- *    </frequencyChannel1>
- *    <channelBandwidth MHz="-0.03">
- *       The width of each frequency channel.
- *    </channelBandwidth>
+ *   <timeBinsPerBufferPow2 value="12"/>
+ *   <sampleTime seconds="0.00008192"/> Sample time of incoming data.
+ *   <frequencyChannel1 MHz="1827.859375"/> The frequency of the first channel (lowest or highest depending on channelBandwidth +ve or -ve).
+ *   <channelBandwidth MHz="-0.390625"/> The width of each frequency channel.
+ *   <dedispersionSamples value="15"/> Number of dedispersion steps.
+ *   <dedispersionStepSize value="1.0"/> Size of dedispersion step size.
+ *   <dedispersionMinimum value="0.0"/> Minimal dedispersion value.
+ *   <numberOfBuffers value="2"/>
  * </DedispersionModule>
  */
-DedispersionModule::DedispersionModule( const ConfigNode& config )
-    : AsyncronousModule(config)
+
+DedispersionModule::DedispersionModule( const ConfigNode& config ) : AsyncronousModule(config)
 {
     // Get configuration options
     //unsigned int nChannels = config.getOption("outputChannelsPerSubband", "value", "512").toUInt();
     float timeSamplesPow2 = config.getOption("timeBinsPerBufferPow2", "value", "15").toFloat();
-    _numSamplesBuffer = (int)pow(2.0,timeSamplesPow2);
+    _numSamplesBuffer = (int) pow(2.0, timeSamplesPow2);
     _tdms = config.getOption("dedispersionSamples", "value", "1984").toUInt();
     _dmStep = config.getOption("dedispersionStepSize", "value", "0.0").toFloat();
     _dmLow = config.getOption("dedispersionMinimum", "value", "0.0").toFloat();
-    if( _dmLow < 0.0 ) { _dmLow = 0.0; }
+    if ( _dmLow < 0.0 )
+    {
+        _dmLow = 0.0;
+    }
     _foff = config.getOption("channelBandwidth", "MHz", "1.0").toDouble();
-    _invert = ( _foff >= 0 )?1:0;
+    _invert = ( _foff >= 0 ) ? 1 : 0;
 
     _fch1 = 0.0;
     _fch1 = config.getOption("frequencyChannel1", "MHz").toFloat();
 
     unsigned int maxBuffers = config.getOption("numberOfBuffers", "value", "2").toUInt();
-    if( maxBuffers < 1 ) throw(QString("DedispersionModule: Must have at least one buffer"));
+    if ( maxBuffers < 1 )
+    {
+        throw(QString("DedispersionModule: Must have at least one buffer"));
+    }
 
-    // setup the data buffers and objects required for each job
-    for( unsigned int i=0; i < maxBuffers; ++i ) {
+    // Setup the data buffers and objects required for each job.
+    for ( unsigned int i=0; i < maxBuffers; ++i )
+    {
         _buffersList.append( new DedispersionBuffer(_numSamplesBuffer, 1, _invert) );
         GPU_Job tmp;
         _jobs.append( tmp );
@@ -78,74 +80,54 @@ DedispersionModule::DedispersionModule( const ConfigNode& config )
     _currentBuffer = _buffers.next();
 }
 
-/**
- *@details
- */
 DedispersionModule::~DedispersionModule()
 {
     waitForJobCompletion();
     _cleanBuffers();
 }
 
-#if 0
-void DedispersionModule::getLOFreqFromRedis()
+void DedispersionModule::waitForJobCompletion()
 {
-    redisContext *c = redisConnect("serendip6", 6379);
-    redisReply *reply = (redisReply *) redisCommand(c, "HMGET SCRAM:IF1 IF1SYNHZ");
-    if (REDIS_REPLY_ERROR == reply->type)
+    while ( ! ( _kernels.allAvailable() && _jobBuffer.allAvailable() ) )
     {
-        std::cerr << "ERROR: Getting LO frequency from redis failed!" << std::endl;
-        freeReplyObject(reply);
-        redisFree(c);
-        return;
-    }
-
-    _LOFreq = atof(reply->element[0]->str);
-    // convert to MHz
-    _LOFreq /= 1e6;
-
-    freeReplyObject(reply);
-    redisFree(c);
-
-    return;
-}
-#endif
-
-void DedispersionModule::waitForJobCompletion() {
-    while( ! ( _kernels.allAvailable() && _jobBuffer.allAvailable() ) ) {
         usleep(10);
     }
     AsyncronousModule::waitForJobCompletion();
 }
 
-void DedispersionModule::_cleanBuffers() {
-    // clean up kernels
-    foreach( DedispersionKernel* k, _kernelList ) {
+void DedispersionModule::_cleanBuffers()
+{
+    // Clean up kernels.
+    foreach ( DedispersionKernel* k, _kernelList )
+    {
         delete k;
     }
     _kernelList.clear();
-    // clean up the data buffers memory
-    foreach( DedispersionBuffer* b, _buffersList ) {
+    // Clean up the data buffers memory.
+    foreach ( DedispersionBuffer* b, _buffersList )
+    {
         delete b;
     }
     _buffersList.clear();
 }
 
-void DedispersionModule::resize( const SpectrumDataSet<float>* streamData ) {
-
+void DedispersionModule::resize( const SpectrumDataSet<float>* streamData )
+{
     unsigned int nChannels = streamData->nChannels();
     unsigned int nSubbands = streamData->nSubbands();
     unsigned int nPolarisations = streamData->nPolarisations();
-    //    unsigned sampleSize = nSubbands * nChannels * nPolarisations;
+    //unsigned sampleSize = nSubbands * nChannels * nPolarisations;
     unsigned sampleSize = nSubbands * nChannels;
 
-    if( sampleSize != _currentBuffer->sampleSize() ) {
+    if ( sampleSize != _currentBuffer->sampleSize() )
+    {
         unsigned maxBuffers = _buffersList.size();
         unsigned maxSamples = _currentBuffer->maxSamples();
         waitForJobCompletion();
         _cleanBuffers();
-        // set up the time/freq buffers
-        for( unsigned int i=0; i < maxBuffers; ++i ) {
+        // Set up the time/freq buffers.
+        for( unsigned int i=0; i < maxBuffers; ++i )
+        {
             _buffersList.append( new DedispersionBuffer(maxSamples, sampleSize, _invert) );
         }
         _buffers.reset( &_buffersList );
@@ -154,60 +136,59 @@ void DedispersionModule::resize( const SpectrumDataSet<float>* streamData ) {
         _nChannels = nChannels * nSubbands;
         // Generate the noise template to replace flagged data
         _noiseTemplate.resize( _numSamplesBuffer * _nChannels );
-        typedef boost::mt19937                     ENG;    // Mersenne Twister
-        typedef boost::normal_distribution<float>          DIST;   // Normal Distribution
-        typedef boost::variate_generator<ENG,DIST> GEN;    // Variate generator
+        typedef boost::mt19937                     ENG;    // Mersenne Twister.
+        typedef boost::normal_distribution<float>  DIST;   // Normal Distribution.
+        typedef boost::variate_generator<ENG,DIST> GEN;    // Variate Generator.
 
         ENG  eng;
         DIST dist(0,1);
         GEN  gen(eng,dist);
 
-        for (int i=0; i< _numSamplesBuffer * _nChannels; ++i) {
-          // chi-squared distribution with 4 degrees of freedom, like raw sampled total power
-          // set the mean to zero and rms to 1 (mean=4 and variance=8 -> rms = 2sqrt(2))
-          do {
-          float x1 = gen();
-          float x2 = gen();
-          float x3 = gen();
-          float x4 = gen();
-          _noiseTemplate[i] = (x1*x1 + x2*x2 + x3*x3 + x4*x4 - 4.0)/2.828427; 
-          } while (_noiseTemplate[i]>3.5) ;
-          //          _noiseTemplate[i] = (x1*x1 - 4.0)/2.828427; 
+        for (int i = 0; i < _numSamplesBuffer * _nChannels; ++i)
+        {
+            // Chi-squared distribution with 4 degrees of freedom, like raw sampled total power
+            // set the mean to zero and rms to 1 (mean=4 and variance=8 -> rms = 2sqrt(2)).
+            do
+            {
+                float x1 = gen();
+                float x2 = gen();
+                float x3 = gen();
+                float x4 = gen();
+                _noiseTemplate[i] = (x1*x1 + x2*x2 + x3*x3 + x4*x4 - 4.0)/2.828427; 
+            } while (_noiseTemplate[i] > 3.5);
+            //_noiseTemplate[i] = (x1*x1 - 4.0)/2.828427; 
         }
-        // calculate dispersion measure shifts
+        // Calculate dispersion measure shifts.
         _dmshifts.clear();
-        for ( int c = 0; c < _nChannels; ++c ) {
-            float val= 4148.741601 * ((1.0 / (_fch1 + (_foff * c)) / 
-                               (_fch1 + (_foff * c))) - (1.0 / _fch1 / _fch1));
-            (_invert)?_dmshifts.insert(_dmshifts.begin(), 1, val):_dmshifts.push_back(val);
+        for ( int c = 0; c < _nChannels; ++c )
+        {
+            float val= 4148.741601 * ((1.0 / (_fch1 + (_foff * c)) / (_fch1 + (_foff * c))) - (1.0 / _fch1 / _fch1));
+            (_invert) ? _dmshifts.insert(_dmshifts.begin(), 1, val) : _dmshifts.push_back(val);
         }
         _tsamp = streamData->getBlockRate();
         _maxshift = (_invert)? -((_dmLow + _dmStep * (_tdms - 1)) * _dmshifts[0])/_tsamp:((_dmLow + _dmStep * (_tdms - 1)) * _dmshifts[_nChannels - 1])/_tsamp;
-        // Calculate the remaining number of samples between the full
-        // buffer minus maxshift and what is being dedispersed:
-        _remainingSamples = (_numSamplesBuffer-_maxshift)%(NUMREG*DIVINT);
-        std::cout << "resize: maxSamples = " << maxSamples << std::endl;
-        std::cout << "resize: dmLow = " << _dmLow << std::endl;
-        //        std::cout << "resize: mshift = " << _dmLow + _dmStep * (_tdms - 1) * _dmshifts[_nChannels - 1] << std::endl;
-        std::cout << "resize: dmStep = " << _dmStep << std::endl;
-        std::cout << "resize: tdms = " << _tdms << std::endl;
-        std::cout << "resize: foff = " << _foff << std::endl;
-        std::cout << "resize: fch1 = " << _fch1 << std::endl;
-        std::cout << "resize: maxShift = " << _maxshift << std::endl;
-        std::cout << "resize: remainingSamples = " << _remainingSamples << std::endl;
-        std::cout << "resize: tsamp = " << _tsamp << std::endl;
-        std::cout << "resize: blob nChannels= " << nChannels << std::endl;
-        std::cout << "resize: nTimeBlocks= " << streamData->nTimeBlocks() << std::endl;
-        if( (int)maxSamples <= _maxshift ) {
-            throw QString("DedispersionModule: maxshift requirements (%1) are bigger"
-                          " than the number of samples (%2)").arg(_maxshift).arg(maxSamples);
+        // Calculate the remaining number of samples between the full buffer minus maxshift and what is being dedispersed:
+        _remainingSamples = (_numSamplesBuffer - _maxshift) % (NUMREG * DIVINT);
+        std::cout << "DedispersionModule::resize(): maxSamples = " << maxSamples << std::endl;
+        std::cout << "DedispersionModule::resize(): dmLow = " << _dmLow << std::endl;
+        //std::cout << "DedispersionModule::resize(): mshift = " << _dmLow + _dmStep * (_tdms - 1) * _dmshifts[_nChannels - 1] << std::endl;
+        std::cout << "DedispersionModule::resize(): dmStep = " << _dmStep << std::endl;
+        std::cout << "DedispersionModule::resize(): tdms = " << _tdms << std::endl;
+        std::cout << "DedispersionModule::resize(): foff = " << _foff << std::endl;
+        std::cout << "DedispersionModule::resize(): fch1 = " << _fch1 << std::endl;
+        std::cout << "DedispersionModule::resize(): maxShift = " << _maxshift << std::endl;
+        std::cout << "DedispersionModule::resize(): remainingSamples = " << _remainingSamples << std::endl;
+        std::cout << "DedispersionModule::resize(): tsamp = " << _tsamp << std::endl;
+        std::cout << "DedispersionModule::resize(): blob nChannels= " << nChannels << std::endl;
+        std::cout << "DedispersionModule::resize(): nTimeBlocks= " << streamData->nTimeBlocks() << std::endl;
+        if( (int)maxSamples <= _maxshift )
+        {
+            throw QString("DedispersionModule: maxshift requirements (%1) are bigger than the number of samples (%2)").arg(_maxshift).arg(maxSamples);
         }
-        // reset kernels
-        for( unsigned int i=0; i < maxBuffers; ++i ) {
-            DedispersionKernel* kernel = new DedispersionKernel( _dmLow, _dmStep,
-                                _tsamp, _tdms,
-//                                _nChannels, _maxshift, _numSamplesBuffer );
-                                _nChannels, _maxshift + _remainingSamples, _numSamplesBuffer );
+        // Reset kernels.
+        for ( unsigned int i = 0; i < maxBuffers; ++i )
+        {
+            DedispersionKernel* kernel = new DedispersionKernel( _dmLow, _dmStep, _tsamp, _tdms, _nChannels, _maxshift + _remainingSamples, _numSamplesBuffer );
             _kernelList.append( kernel ); 
             kernel->setDMShift( _dmshifts );
         }
@@ -319,65 +300,72 @@ void DedispersionModule::dedisperse( DedispersionBuffer* buffer, DedispersionSpe
     dataOut->setInputDataBlobs( buffer->inputDataBlobs() );
     dataOut->setFirstSample( buffer->firstSampleNumber() );
     submit( job );
-    //    std::cout << "dedispersionModule: current jobs = " << gpuManager()->jobsQueued() << std::endl;
+    //std::cout << "DedispersionModule::dedisperse(): current jobs = " << gpuManager()->jobsQueued() << std::endl;
 }
 
-void DedispersionModule::gpuJobFinished( GPU_Job* job, DedispersionKernel* kernel, DedispersionSpectra* dataOut ) {
-     _kernels.unlock( kernel ); // give up the kernel
-     if( job->status() != GPU_Job::Failed ) {
-         job->reset();
-         _jobBuffer.unlock(job); // return the job to the pool, ready for the next
-         exportData( dataOut );  // send out the finished data product to our customers
-     } else {
-         std::cerr << "DedispersionModule: " << job->error() << std::endl;
-         job->reset();
-         _jobBuffer.unlock(job); // return the job to the pool, ready for the next
-         exportCancel( dataOut );
-     }
+void DedispersionModule::gpuJobFinished( GPU_Job* job, DedispersionKernel* kernel, DedispersionSpectra* dataOut )
+{
+    _kernels.unlock( kernel ); // Give up the kernel.
+    if ( job->status() != GPU_Job::Failed )
+    {
+        job->reset();
+        _jobBuffer.unlock(job); // Return the job to the pool, ready for the next.
+        exportData( dataOut );  // Send out the finished data product to our customers.
+    }
+    else
+    {
+        std::cerr << "DedispersionModule::gpuJobFinished(): " << job->error() << std::endl;
+        job->reset();
+        _jobBuffer.unlock(job); // return the job to the pool, ready for the next
+        exportCancel( dataOut );
+    }
 }
 
-void DedispersionModule::gpuDataUploaded( DedispersionBuffer* buffer ) {
+void DedispersionModule::gpuDataUploaded( DedispersionBuffer* buffer )
+{
     _buffers.unlock(buffer);
 }
 
-void DedispersionModule::exportComplete( DataBlob* datablob ) {
-    // unlock Spectrum Data blobs
+void DedispersionModule::exportComplete( DataBlob* datablob )
+{
+    // Unlock Spectrum Data blobs.
     DedispersionSpectra* data = static_cast<DedispersionSpectra*>(datablob);
-    foreach( SpectrumDataSetStokes* d, data->inputDataBlobs() ) {
+    foreach ( SpectrumDataSetStokes* d, data->inputDataBlobs() )
+    {
         unlock( d );
     }
-    // unlock the dedispersion datablob
+    // Unlock the dedispersion datablob.
     _dedispersionDataBuffer.unlock(data);
 }
 
-DedispersionModule::DedispersionKernel::DedispersionKernel( float start, float step, float tsamp, float tdms , unsigned nChans, unsigned maxshift, unsigned nsamples )
-   : _startdm( start ), _dmstep( step ), _tsamp(tsamp), _tdms(tdms), _nChans(nChans),
-     _maxshift(maxshift), _nsamples(nsamples)
+DedispersionModule::DedispersionKernel::DedispersionKernel( float start, float step, float tsamp, float tdms , unsigned nChans, unsigned maxshift, unsigned nsamples ) : _startdm( start ), _dmstep( step ), _tsamp(tsamp), _tdms(tdms), _nChans(nChans), _maxshift(maxshift), _nsamples(nsamples)
 {
 }
 
-void DedispersionModule::DedispersionKernel::setDMShift( std::vector<float>& buffer ) {
+void DedispersionModule::DedispersionKernel::setDMShift( std::vector<float>& buffer )
+{
     _dmShift = GPU_MemoryMap(buffer);
 }
 
-void DedispersionModule::DedispersionKernel::cleanUp() {
+void DedispersionModule::DedispersionKernel::cleanUp()
+{
     _inputBuffer.runCallBacks();
 }
 
-//void DedispersionModule::DedispersionKernel::setOutputBuffer( QVector<float>& buffer )
 void DedispersionModule::DedispersionKernel::setOutputBuffer( std::vector<float>& buffer )
 {
     _outputBuffer = GPU_MemoryMap(buffer);
 }
 
-//void DedispersionModule::DedispersionKernel::setInputBuffer( QVector<float>& buffer, GPU_MemoryMap::CallBackT callback ) {
-void DedispersionModule::DedispersionKernel::setInputBuffer( std::vector<float>& buffer, GPU_MemoryMap::CallBackT callback ) {
+void DedispersionModule::DedispersionKernel::setInputBuffer( std::vector<float>& buffer, GPU_MemoryMap::CallBackT callback )
+{
     _inputBuffer = GPU_MemoryMap(buffer);
     _inputBuffer.addCallBack( callback );
 }
 
-void DedispersionModule::DedispersionKernel::run( GPU_NVidia& gpu ) {
-     //cache_dedisperse_loop( float *outbuff, float *buff, float mstartdm, float mdmstep )
+void DedispersionModule::DedispersionKernel::run( GPU_NVidia& gpu )
+{
+//cache_dedisperse_loop( float *outbuff, float *buff, float mstartdm, float mdmstep )
 //std::cout << " maxShift =" << _maxshift << std::endl;
 //std::cout << " nchans =" << _nChans << std::endl;
 //std::cout << " tsamp =" << _tsamp << std::endl;
@@ -385,13 +373,13 @@ void DedispersionModule::DedispersionKernel::run( GPU_NVidia& gpu ) {
 //std::cout << " output buffer (" << gpu.devicePtr(_outputBuffer) << ") size=" << _outputBuffer.size() << std::endl;
 //std::cout << " dmShift size =" << _dmShift.size() << std::endl;
 //std::cout << " nSamples =" << _nsamples << std::endl;
-     cacheDedisperseLoop( (float*)gpu.devicePtr(_outputBuffer) , _outputBuffer.size(),
-                          (float*)gpu.devicePtr(_inputBuffer), (_startdm/_tsamp),
-                          (_dmstep/_tsamp), _tdms, _nsamples,
-                          (const float*)gpu.devicePtr(_dmShift),
-                          _maxshift,
-                          _nChans
-                        );
+    cacheDedisperseLoop( (float*)gpu.devicePtr(_outputBuffer) , _outputBuffer.size(),
+                         (float*)gpu.devicePtr(_inputBuffer), (_startdm/_tsamp),
+                         (_dmstep/_tsamp), _tdms, _nsamples,
+                         (const float*)gpu.devicePtr(_dmShift),
+                         _maxshift,
+                         _nChans
+                       );
 }
 
 } // namespace ampp
