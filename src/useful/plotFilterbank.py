@@ -35,6 +35,7 @@ if __name__=="__main__":
     cmdline.add_option('--dynamic', type = 'string', dest = 'dynamic', help = 'Select multiple spectra to plot dynamic spectrum.')
     cmdline.add_option('--timeseries', type = 'string', dest = 'timeseries', help = 'Select single channel and range of spectra to plot the timeseries.')
     cmdline.add_option('--bandpass', dest = 'bandpass', action = "store_true", help = 'Plot total bandpass.')
+    cmdline.add_option('--save', dest = 'savePlot', action = "store_true", help = 'Save plot to .png file instead of interacive plotting.')
 
     # reading cmd options
     (opts, args) = cmdline.parse_args()
@@ -45,7 +46,6 @@ if __name__=="__main__":
 
     # Define constans and variables.
     filterbankFilename = opts.file
-
     filterbankFile = FilReader(filterbankFilename) # read filterbank file
     #print "File %s opened." % (filterbankFilename)
     numberChannels = filterbankFile.header.nchans # get number of spectral channels
@@ -67,16 +67,19 @@ if __name__=="__main__":
     print "File %s has %d channels and %d samples/spectra." % (filterbankFilename, numberChannels, numberSpectra)
     if opts.spectrum:
         spectrum = opts.spectrum
-        #print block
         if (spectrum >= numberSpectra):
             spectrum = numberSpectra-1
             print "Selected spectrum exceeds available number of spectra!"
         singleSpectrum = filterbankFile.readBlock(spectrum, 1) # read specific spectrum from the data
         plt.plot(singleSpectrum)
-        plt.show()
         plt.xlabel("Channel")
         plt.ylabel("Intensity (a.u.)")
-        sys.exit(0)
+        if not opts.savePlot:
+          plt.show()
+        else:
+          baseFilterbankFilename, extFilterbankFilename = os.path.splitext(filterbankFilename)
+          plt.savefig(baseFilterbankFilename + "_spectrum_" + str(spectrum) + ".png")
+          sys.exit(0)
     elif opts.block:
         block = opts.block.split()
         block = np.arange(int(block[0]), int(block[1]))
@@ -89,8 +92,12 @@ if __name__=="__main__":
         plt.plot(blockBandpass)
         plt.xlabel("Channel")
         plt.ylabel("Intensity (a.u.)")
-        plt.show()
-        sys.exit(0)
+        if not opts.savePlot:
+          plt.show()
+        else:
+          baseFilterbankFilename, extFilterbankFilename = os.path.splitext(filterbankFilename)
+          plt.savefig(baseFilterbankFilename + "_block_" + str(block[0]) + "-" + str(block[-1]) + ".png")
+          sys.exit(0)
     elif opts.dynamic:
         dynamic = opts.dynamic.split()
         dynamic = np.arange(int(dynamic[0]), int(dynamic[1]))
@@ -102,8 +109,12 @@ if __name__=="__main__":
         plt.imshow(dynamicSpectrum, origin='lower', cmap = cm.hot, interpolation='nearest', aspect='auto')
         plt.xlabel("Spectrum")
         plt.ylabel("Channel")
-        plt.show()
-        sys.exit(0)
+        if not opts.savePlot:
+          plt.show()
+        else:
+          baseFilterbankFilename, extFilterbankFilename = os.path.splitext(filterbankFilename)
+          plt.savefig(baseFilterbankFilename + "_dynamic_" + str(dynamic[0]) + "-" + str(dynamic[-1]) + ".png")
+          sys.exit(0)
     elif opts.timeseries:
         timeseries = opts.timeseries.split()
         channel = int(timeseries[0])
@@ -122,14 +133,23 @@ if __name__=="__main__":
         plt.plot(timeseriesSelected)
         plt.xlabel("Spectrum")
         plt.ylabel("Intensity (a.u.)")
-        plt.show()
+        if not opts.savePlot:
+          plt.show()
+        else:
+          baseFilterbankFilename, extFilterbankFilename = os.path.splitext(filterbankFilename)
+          plt.savefig(baseFilterbankFilename + "_timeseries_ch" + str(channel) + "_" + str(begin) + "-" + str(end) + ".png")
+          sys.exit(0)
     elif opts.bandpass:
         totalBandpass = filterbankFile.bandpass() # calculate bandpass from entire observation
         plt.plot(totalBandpass)
         plt.xlabel("Channel")
         plt.ylabel("Intensity (a.u.)")
-        plt.show()
-        sys.exit(0)
+        if not opts.savePlot:
+          plt.show()
+        else:
+          baseFilterbankFilename, extFilterbankFilename = os.path.splitext(filterbankFilename)
+          plt.savefig(baseFilterbankFilename + "_bandpass.png")
+          sys.exit(0)
     else:
         print "No options provided."
         sys.exit(0)
