@@ -75,7 +75,21 @@ SigprocStokesWriter::SigprocStokesWriter(const ConfigNode& configNode ) : Abstra
     _first = (configNode.hasAttribute("writeHeader") && configNode.getAttribute("writeHeader").toLower() == "true" );
     _site = configNode.getOption("TelescopeID", "value", "64").toUInt();
     _machine = configNode.getOption("MachineID", "value", "13").toUInt();
-    _sourceName = "K7Field";
+    _raString = configNode.getOption("RAJ", "value", "000000.0");
+    _decString = configNode.getOption("DecJ", "value", "000000.0");
+    _ra = _raString.toFloat();
+    _dec = _decString.toFloat();
+    _sourceName = _raString.left(4);
+    if (_dec > 0.0 )
+    {
+      _sourceName.append("+");
+      _sourceName.append(_decString.left(4));
+    }
+    else
+    {
+      _sourceName.append(_decString.left(5));
+    }
+    //_sourceName = "K7Field";
     _cur = 0;
 
     // Open file.
