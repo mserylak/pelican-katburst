@@ -6,7 +6,7 @@
   <emulators>
     <K7Emulator>
       <connection host="127.0.0.1" port="9999"/>
-      <packet channels="1024" interval="656"/>
+      <packet channels="1024" interval="656" rate="390625" />
       <channel number="0" amplitude="0"/>
       <accumulation rate="256" number="0"/>
     </K7Emulator>

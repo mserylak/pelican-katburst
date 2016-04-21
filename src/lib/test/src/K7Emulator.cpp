@@ -18,9 +18,10 @@ K7Emulator::K7Emulator(const ConfigNode& configNode) : AbstractUdpEmulator(confi
     _port = configNode.getOption("connection", "port", "9999").toULong();
     _channels = configNode.getOption("packet", "channels", "1024").toULong(); // Number of spectral channels per packet.
     _interval = configNode.getOption("packet", "interval", "82").toULong(); // Interval in microseconds.
+    _packetsPerSecond = configNode.getOption("packet", "rate", "390625").toULong(); // Maximal number of packets per second.
     _toneChannel = configNode.getOption("channel", "number", "0").toULong(); // Put a impulse at a specified channel.
     _amplitudeChannel = configNode.getOption("channel", "amplitude", "0").toULong(); // Give a strength at a specified channel.
-    _accumulationRate = configNode.getOption("accumulation", "rate", "32").toULong(); // Give accumulation rate.
+    _accumulationRate = configNode.getOption("accumulation", "rate", "64").toULong(); // Give accumulation rate.
     _accumulationNumber = configNode.getOption("accumulation", "number", "0").toULong(); // Give accumulation number at start.
 
     // Set the packet size in bytes (each sample is 8 bytes + 16 for header).
@@ -74,7 +75,6 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
     int8_t YYre;
     int8_t XYre;
     int8_t XYim;
-    uint32_t packetsPerSecond = 390625; // Maximal number of packets per second.
 
     // Set pointer to the output data.
     ptr = _packet.data();
@@ -103,52 +103,72 @@ void K7Emulator::getPacketData(char*& ptr, unsigned long& size)
     *(ptr + 14) = (unsigned char) ((_accumulationRate & 0x0000000000FF0000) >> 16);
     *(ptr + 15) = (unsigned char) ((_accumulationRate & 0x00000000FF000000) >> 24);
 
-
-    // Fill the packet payload with data.
-    for (unsigned i = 0; i < _channels; ++i)
+    _accumulationNumber += _accumulationRate;
+    if (_accumulationNumber >= _packetsPerSecond)
     {
-        if ( i == _toneChannel )
+        _accumulationNumber = _accumulationNumber % _packetsPerSecond;
+        _UTCtimestamp += 1;
+        for (unsigned i = 0; i < _channels; ++i)
         {
-            if ( _toneChannel == 0 )
+            XXre = 127.0;
+            YYre = 127.0;
+            XYre = 127.0;
+            XYim = 127.0;
+            // Set XXre
+            *(ptr + 16 + (i * 8)) = (unsigned char)  (XXre & 0x00000000000000FF);
+            *(ptr + 17 + (i * 8)) = (unsigned char) ((XXre & 0x000000000000FF00) >> 8);
+            // Set YYre
+            *(ptr + 18 + (i * 8)) = (unsigned char)  (YYre & 0x00000000000000FF);
+            *(ptr + 19 + (i * 8)) = (unsigned char) ((YYre & 0x000000000000FF00) >> 8);
+            // Set XYre
+            *(ptr + 20 + (i * 8)) = (unsigned char)  (XYre & 0x00000000000000FF);
+            *(ptr + 21 + (i * 8)) = (unsigned char) ((XYre & 0x000000000000FF00) >> 8);
+            // Set XYim
+            *(ptr + 22 + (i * 8)) = (unsigned char)  (XYim & 0x00000000000000FF);
+            *(ptr + 23 + (i * 8)) = (unsigned char) ((XYim & 0x000000000000FF00) >> 8);
+         }
+    }
+    else
+    {
+        for (unsigned i = 0; i < _channels; ++i)
+        {
+            if ( i == _toneChannel )
+            {
+                if ( _toneChannel == 0 )
+                {
+                    XXre = int(20 + 3 * random_normal());
+                    YYre = int(20 + 3 * random_normal());
+                    XYre = int(20 + 3 * random_normal());
+                    XYim = int(20 + 3 * random_normal());
+                }
+                else
+                {
+                    XXre = _amplitudeChannel;
+                    YYre = _amplitudeChannel;
+                    XYre = _amplitudeChannel;
+                    XYim = _amplitudeChannel;
+                }
+            }
+            else
             {
                 XXre = int(20 + 3 * random_normal());
                 YYre = int(20 + 3 * random_normal());
                 XYre = int(20 + 3 * random_normal());
                 XYim = int(20 + 3 * random_normal());
             }
-            else
-            {
-                XXre = _amplitudeChannel;
-                YYre = _amplitudeChannel;
-                XYre = _amplitudeChannel;
-                XYim = _amplitudeChannel;
-            }
+            // Set XXre
+            *(ptr + 16 + (i * 8)) = (unsigned char)  (XXre & 0x00000000000000FF);
+            *(ptr + 17 + (i * 8)) = (unsigned char) ((XXre & 0x000000000000FF00) >> 8);
+            // Set YYre
+            *(ptr + 18 + (i * 8)) = (unsigned char)  (YYre & 0x00000000000000FF);
+            *(ptr + 19 + (i * 8)) = (unsigned char) ((YYre & 0x000000000000FF00) >> 8);
+            // Set XYre
+            *(ptr + 20 + (i * 8)) = (unsigned char)  (XYre & 0x00000000000000FF);
+            *(ptr + 21 + (i * 8)) = (unsigned char) ((XYre & 0x000000000000FF00) >> 8);
+            // Set XYim
+            *(ptr + 22 + (i * 8)) = (unsigned char)  (XYim & 0x00000000000000FF);
+            *(ptr + 23 + (i * 8)) = (unsigned char) ((XYim & 0x000000000000FF00) >> 8);
         }
-        else
-        {
-            XXre = int(20 + 3 * random_normal());
-            YYre = int(20 + 3 * random_normal());
-            XYre = int(20 + 3 * random_normal());
-            XYim = int(20 + 3 * random_normal());
-        }
-        // Set XXre
-        *(ptr + 16 + (i * 8)) = (unsigned char)  (XXre & 0x00000000000000FF);
-        *(ptr + 17 + (i * 8)) = (unsigned char) ((XXre & 0x000000000000FF00) >> 8);
-        // Set YYre
-        *(ptr + 18 + (i * 8)) = (unsigned char)  (YYre & 0x00000000000000FF);
-        *(ptr + 19 + (i * 8)) = (unsigned char) ((YYre & 0x000000000000FF00) >> 8);
-        // Set XYre
-        *(ptr + 20 + (i * 8)) = (unsigned char)  (XYre & 0x00000000000000FF);
-        *(ptr + 21 + (i * 8)) = (unsigned char) ((XYre & 0x000000000000FF00) >> 8);
-        // Set XYim
-        *(ptr + 22 + (i * 8)) = (unsigned char)  (XYim & 0x00000000000000FF);
-        *(ptr + 23 + (i * 8)) = (unsigned char) ((XYim & 0x000000000000FF00) >> 8);
-    }
-    _accumulationNumber += _accumulationRate;
-    if (_accumulationNumber >= packetsPerSecond)
-    {
-        _accumulationNumber = _accumulationNumber % packetsPerSecond;
-        _UTCtimestamp += 1;
     }
     //std::cout << _UTCtimestamp << " " << _accumulationNumber << " " << _accumulationRate << std::endl;
 }

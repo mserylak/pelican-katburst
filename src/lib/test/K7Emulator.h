@@ -46,6 +46,7 @@ class K7Emulator : public AbstractUdpEmulator
         unsigned long _interval; // The interval between packets in microseconds.
         unsigned long _toneChannel; // Put a impulse at specified channel.
         unsigned long _amplitudeChannel; // Give a strength for specified channel.
+        unsigned long _packetsPerSecond; // Maximal number of packets per second.
         QByteArray _packet; // The data packet.
 };
 
