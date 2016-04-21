@@ -180,6 +180,7 @@ void K7Chunker::next(QIODevice* device)
             // as the previous frame might contain data from this one).
             lostPackets = 0;
             difference = (accumulation >= previousAccumulation) ? (accumulation - previousAccumulation) : (accumulation + _packetsPerSecond - previousAccumulation);
+#if 0
             // Duplicated packets... ignore
             if (difference < rate)
             {
@@ -188,7 +189,9 @@ void K7Chunker::next(QIODevice* device)
                 continue;
             }
             // Missing packets
-            else if (difference > rate)
+            else
+#endif
+            if (difference > rate)
             {
                 // -1 since it includes the received packet as well
                 lostPackets = (difference / rate) - 1;
