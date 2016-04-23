@@ -19,7 +19,7 @@ K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
     // Check the configuration type matches the class name.
     if (config.type() != "K7Chunker")
     {
-        throw _err("K7Chunker(): Invalid or missing XML configuration.");
+        throw _err("K7Chunker::K7Chunker(): Invalid or missing XML configuration.");
     }
 
     // Packet dimensions.
@@ -38,7 +38,7 @@ K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
     _channelEnd = config.getOption("stream", "channelEnd", "1023").toUInt();
     if ( (_channelEnd >= _nChannels) || (_channelStart >= _channelEnd) || (_channelStart < 0) || (_channelEnd < 0) )
     {
-        throw _err("K7Chunker(): Invalid channel ranges.");
+        throw _err("K7Chunker::K7Chunker(): Invalid channel ranges.");
     }
     std::cout << "K7Chunker::K7Chunker(): _channelStart " << _channelStart << std::endl;
     std::cout << "K7Chunker::K7Chunker(): _channelEnd " << _channelEnd << std::endl;

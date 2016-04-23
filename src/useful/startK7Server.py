@@ -17,8 +17,7 @@ import multiprocessing
 
 if __name__=="__main__":
     # Parsing the command line options.
-    usage = "Usage: %prog --accumulation <accumulation_rate> --iteration <packets_per_iteration> --address \"<ip_address> <port_number>\"\
-               \n       %prog -r <accumulation_rate> -i <packets_per_iteration> -a \"<ip_number> <port>\" "
+    usage = "Usage: %prog {options}"
     cmdline = opt.OptionParser(usage)
     cmdline.formatter.max_help_position = 100 # increase space reserved for option flags (default 24), trick to make the help more readable
     cmdline.formatter.width = 250 # increase help width from 120 to 200
@@ -48,7 +47,7 @@ if __name__=="__main__":
     startChannel = frequency[0]
     numberChannels = frequency[1]
     endChannel = startChannel + numberChannels - 1
-    if ( startChannel < 0 or startChannel > endChannel or endChannel < startChannel or endChannel < 0 or endChannel > 1024 ):
+    if ( startChannel < 0 or startChannel >= endChannel or endChannel <= startChannel or endChannel < 0 or endChannel >= 1024 ):
         print "Selected spectral range exceeds available range!"
         sys.exit(0)
     if not opts.fileName:
