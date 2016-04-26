@@ -30,3 +30,10 @@
   </server>
 
 </configuration>
+ffer maxSize="10758389760" maxChunkSize="1050624"/>
+      </SpectrumDataSetStokes>
+    </buffers>
+
+  </server>
+
+</configuration>

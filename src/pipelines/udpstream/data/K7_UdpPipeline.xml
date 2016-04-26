@@ -78,3 +78,14 @@
   </pipeline>
 
 </configuration>
+   <DecJ value="-451034.8751"/> <!-- Declination of the source. -->
+          <file filepath="/home/serylak/work/git/pelican-katburst/K7"/> <!-- Filterbank file location. -->
+        </SigprocStokesWriter>
+
+      </streamers>
+
+    </output>
+
+  </pipeline>
+
+</configuration>
