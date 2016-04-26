@@ -14,12 +14,12 @@
 
     <adapters>
       <K7DataAdapter>
-        <!--channelsPerBlob value="1024"/--> <!-- Full channel range (400 MHz) in the incoming stream. -->
-        <channelsPerBlob value="512"/> <!-- 512 channels (200 MHz) in the incoming stream. -->
-        <!--channelsPerBlob value="256"/--> <!-- 256 channels (100 MHz) in the incoming stream. -->
-        <!--channelsPerBlob value="128"/--> <!-- 128 channels (50 MHz) in the incoming stream. -->
-        <!--channelsPerBlob value="64"/--> <!-- 64 channels (25 MHz) in the incoming stream. -->
-        <!--channelsPerBlob value="32"/--> <!-- 32 channels (12.5 MHz) in the incoming stream. -->
+        <channelsPerBlob value="1024"/> <!-- 1024 channels (400.0 MHz) in the incoming stream. -->
+        <!--channelsPerBlob value="512"/-->  <!--  512 channels (200.0 MHz) in the incoming stream. -->
+        <!--channelsPerBlob value="256"/-->  <!--  256 channels (100.0 MHz) in the incoming stream. -->
+        <!--channelsPerBlob value="128"/-->  <!--  128 channels  (50.0 MHz) in the incoming stream. -->
+        <!--channelsPerBlob value="64"/-->   <!--   64 channels  (25.0 MHz) in the incoming stream. -->
+        <!--channelsPerBlob value="32"/-->   <!--   32 channels  (12.5 MHz) in the incoming stream. -->
       </K7DataAdapter>
     </adapters>
 
@@ -77,7 +77,7 @@
         </DedispersionDataAnalysisOutput>
 
         <SigprocStokesWriter active="true" writeHeader="false">
-          <subbandsPerPacket value="512"/> <!-- Number of channels coming from K7Chunker. -->
+          <subbandsPerPacket value="1024"/> <!-- Number of channels coming from K7Chunker. -->
           <totalComplexSubbands value="512"/> <!-- Used in channel bandwidth calculation, leave set to 512. -->
           <clock value="400"/> <!-- Used in channel bandwidth calculation, leave set to 400. -->
           <integrateTimeBins value="32"/> <!-- Used in sampling time calculation, equal to accumulationNumber. -->
@@ -91,7 +91,7 @@
           <foff value="-0.390625"/> <!-- Channel bandwidth, can be set explicitly instead of calculation. -->
           <TelescopeID value="64"/> <!-- Telescope identifier. -->
           <MachineID value="13"/> <!-- Backend identifier. -->
-          <file filepath="/home/serylak/work/git/pelican-katburst/K7_fb"/>
+          <file filepath="/home/serylak/work/git/pelican-katburst/K7_fb"/> <!-- Filterbank file location. -->
         </SigprocStokesWriter>
 
       </streamers>
