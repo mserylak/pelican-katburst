@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import socket
 import struct
 
@@ -33,5 +34,10 @@ while True:
   if (drvAccumulationNumber >= packetsPerSecond):
     drvAccumulationNumber = drvAccumulationNumber % packetsPerSecond
     initUTCtimestamp = initUTCtimestamp + 1
+
+  if ((drvAccumulationNumber - accumulationNumber != 0) or (initUTCtimestamp - UTCtimestamp != 0)):
+    print UTCtimestamp, accumulationNumber, accumulationRate, initUTCtimestamp, drvAccumulationNumber, accumulationRate
+    sock.close()
+    sys.exit("Packets out of sync!")
+
   print UTCtimestamp, accumulationNumber, accumulationRate, initUTCtimestamp, drvAccumulationNumber, accumulationRate
-sock.close()
