@@ -5,6 +5,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QString>
 #include <QtCore/QIODevice>
+#include <QtCore/QObject>
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>
 #include <cstdio>
@@ -58,7 +59,8 @@ K7Chunker::K7Chunker(const ConfigNode& config) : AbstractChunker(config)
     std::cout << "K7Chunker::K7Chunker(): _byte1OfStream " << _byte1OfStream << std::endl;
 
     // Initialise class variables.
-    _startTimestamp = _startAccumulation = 0;
+    _startTimestamp = 0;
+    _startAccumulation = 0;
     _packetsAccepted = 0;
     _packetsRejected = 0;
 
@@ -95,10 +97,8 @@ void K7Chunker::next(QIODevice* device)
     unsigned int lostPackets, difference;
     unsigned int offsetStream;
     unsigned int lostPacketCounter;
-    unsigned int previousAccumulation;
-    unsigned int _startAccumulation;
     unsigned long int previousTimestamp;
-    unsigned long int _startTimestamp;
+    unsigned int previousAccumulation;
     unsigned long int timestamp;
     unsigned int accumulation;
     unsigned int rate;
@@ -109,13 +109,11 @@ void K7Chunker::next(QIODevice* device)
 
     difference = 0;
     offsetStream = 0;
-    previousAccumulation = 0;
-    previousTimestamp = 0;
     timestamp = 0;
     accumulation = 0;
     rate = 0;
-    _startAccumulation = 0;
-    _startTimestamp = 0;
+    previousTimestamp = _startTimestamp;
+    previousAccumulation = _startAccumulation;
 
     // Get writable buffer space for the chunk.
     WritableData writableData;
@@ -156,22 +154,20 @@ void K7Chunker::next(QIODevice* device)
             timestamp    = currentPacket.header.UTCtimestamp;
             accumulation = currentPacket.header.accumulationNumber;
             rate         = currentPacket.header.accumulationRate;
-
+            //std::cout << "K7Chunker::next(): timestamp " << timestamp << " accumulation " << accumulation << " rate " << rate << std::endl;
             // First time next() has been run, initialise _startTimestamp and _startAccumulation.
             if (i == 0 && _startTimestamp == 0)
             {
                 previousTimestamp = _startTimestamp = _startTimestamp == 0 ? timestamp : _startTimestamp;
                 previousAccumulation = _startAccumulation = _startAccumulation == 0 ? accumulation : _startAccumulation;
-                //std::cout << "K7Chunker::next(): UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
+                //std::cout << "K7Chunker::next(): timestamp " << timestamp << " accumulation " << accumulation << " rate " << rate << std::endl;
             }
 
-            // Sanity check in seqid. If the seconds counter is 0xFFFFFFFFFFFFFFFF,
-            // the data cannot be trusted (ignore).
+            // Sanity check in UTCtimestamp. If the seconds counter is 0xFFFFFFFFFFFFFFFF, the data cannot be trusted (ignore).
             if (timestamp == ~0UL || previousTimestamp + 10 < timestamp)
             {
-                _packetsRejected++;
-                i--;
-                continue;
+                std::cerr << "K7Chunker::next(): Data cannot be trusted! Timestamp is " << timestamp << " or previousTimestamp is " << previousTimestamp << std::endl;
+                exit(-1);
             }
 
             // Check that the packets are contiguous. accumulationNumber increments by
@@ -181,19 +177,20 @@ void K7Chunker::next(QIODevice* device)
             lostPackets = 0;
             difference = (accumulation >= previousAccumulation) ? (accumulation - previousAccumulation) : (accumulation + _packetsPerSecond - previousAccumulation);
 #if 0
-            // Duplicated packets... ignore
+            // Duplicated packets. Need to address this. ICBF does not duplicate packets though.
             if (difference < rate)
             {
+                std::cout << "Duplicated packets, difference " << difference << std::endl;
                 ++_packetsRejected;
                 i -= 1;
                 continue;
             }
-            // Missing packets
             else
 #endif
+            // Missing packets.
             if (difference > rate)
             {
-                // -1 since it includes the received packet as well
+                // -1 since it includes the received packet as well.
                 lostPackets = (difference / rate) - 1;
             }
 
@@ -207,7 +204,7 @@ void K7Chunker::next(QIODevice* device)
             lostPacketCounter = 0;
             for (lostPacketCounter = 0; lostPacketCounter < lostPackets && i + lostPacketCounter < _nPackets; ++lostPacketCounter)
             {
-                // Generate empty packet with correct timestamp and accumulation number
+                // Generate empty packet with correct timestamp and accumulation number.
                 previousTimestamp = (previousAccumulation < _packetsPerSecond) ? previousTimestamp : previousTimestamp + 1;
                 previousAccumulation = previousAccumulation % _packetsPerSecond;
                 updateEmptyPacket(_emptyPacket, previousTimestamp, previousAccumulation, rate);
@@ -219,7 +216,7 @@ void K7Chunker::next(QIODevice* device)
             if (i != _nPackets)
             {
                 ++_packetsAccepted;
-                // Generate Stream packet
+                // Generate stream packet.
                 outputPacket.header = currentPacket.header;
                 memcpy((void*)outputPacket.data, &currentPacket.data[_byte1OfStream], _bytesStream);
                 offsetStream = writePacket(&writableData, outputPacket, _packetSizeStream, offsetStream);
@@ -244,7 +241,7 @@ void K7Chunker::next(QIODevice* device)
         std::cout << "K7Chunker::next(): Writable data not valid, discarding packets." << std::endl;
     }
 
-    // Update _startTime
+    // Update _startTime.
     _startTimestamp = previousTimestamp;
     _startAccumulation = previousAccumulation;
 }
