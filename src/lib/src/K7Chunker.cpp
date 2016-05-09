@@ -228,7 +228,7 @@ void K7Chunker::next(QIODevice* device)
         _chunkerCounter++;
         // Clear any data locks.
         _writable = WritableData();
-        if (_chunkerCounter % 5 == 0)
+        if (_chunkerCounter % 100 == 0)
         {
             std::cout << "K7Chunker::next(): " << _chunksProcessed << " chunks processed. " << "UTC timestamp " << timestamp << " accumulationNumber " << accumulation << " accumulationRate " << rate << std::endl;
         }

@@ -83,7 +83,7 @@ void K7Pipeline::run(QHash<QString, DataBlob*>& remoteData)
     dataOutput(_intStokes, "SpectrumDataSetStokes");
     _rfiClipper->run(_weightedIntStokes);
     _dedispersionModule->dedisperse(_weightedIntStokes);
-    if (0 == _iteration % 5)
+    if (0 == _iteration % 100)
     {
         std::cout << "K7Pipeline::run(): Finished the dedispersion pipeline, iteration " << _iteration << std::endl;
     }
